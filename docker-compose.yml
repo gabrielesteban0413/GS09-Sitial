@@ -1,0 +1,70 @@
+services:
+  api:
+    build:
+      context: ./backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql+asyncpg://sitial:${POSTGRES_PASSWORD:-sitial}@postgres:5432/sitial
+      REDIS_URL: redis://redis:6379/0
+      GOOGLE_MAPS_API_KEY: ${GOOGLE_MAPS_API_KEY}
+      SECRET_KEY: ${SECRET_KEY}
+      CORS_ORIGINS: http://localhost:5173
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - sitial
+
+  web:
+    build:
+      context: ./frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      - api
+    networks:
+      - sitial
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: sitial
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-sitial}
+      POSTGRES_DB: sitial
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sitial -d sitial"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - sitial
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - sitial
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  sitial:
+    driver: bridge
