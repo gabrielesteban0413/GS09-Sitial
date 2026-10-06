@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Informe — FastAPI/Node.js como framework backend</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#f4f7f8;--panel:#fff;--border:#e2e9eb;--text:#0a1f24;
+  --text-2:#5a6d73;--text-3:#8a9a9f;--teal:#3a9aa3;--teal-dark:#2d7880;
+  --coral:#e5685a;--amber:#d99a2b;
+  --mono:'SF Mono',Consolas,monospace;
+  --ui:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+}
+body{font-family:var(--ui);background:var(--bg);color:var(--text);
+  line-height:1.65;font-size:15px}
+.wrap{max-width:960px;margin:0 auto;padding:60px 32px}
+header{border-bottom:1px solid var(--border);padding-bottom:40px;margin-bottom:56px}
+.eyebrow{display:inline-block;padding:5px 12px;border-radius:100px;
+  background:rgba(82,188,198,0.14);color:var(--teal-dark);
+  font-size:12px;font-weight:600;letter-spacing:0.04em;margin-bottom:18px}
+h1{font-size:42px;font-weight:800;letter-spacing:-0.03em;line-height:1.1;margin-bottom:16px}
+h1 em{font-style:normal;color:var(--teal-dark)}
+.lead{font-size:17.5px;color:var(--text-2);max-width:720px}
+.meta{display:flex;gap:32px;flex-wrap:wrap;margin-top:28px;font-size:13px;color:var(--text-3)}
+.meta b{color:var(--text);font-weight:600;display:block;font-size:11px;
+  letter-spacing:0.08em;text-transform:uppercase;margin-bottom:4px}
+section{margin-bottom:64px}
+h2{font-size:26px;font-weight:700;letter-spacing:-0.02em;margin-bottom:20px;
+  padding-bottom:12px;border-bottom:2px solid var(--teal);display:inline-block}
+h3{font-size:17px;font-weight:700;margin-top:28px;margin-bottom:12px}
+p{margin-bottom:14px;color:var(--text-2)}
+p strong{color:var(--text)}
+ul,ol{margin-left:24px;margin-bottom:18px;color:var(--text-2)}
+li{margin-bottom:8px}
+code{background:#eef4f5;padding:2px 6px;border-radius:4px;
+  font-family:var(--mono);font-size:13px;color:var(--teal-dark)}
+.callout{background:#fff;border-left:3px solid var(--teal);
+  padding:18px 22px;border-radius:0 8px 8px 0;margin:20px 0;
+  font-size:14.5px;color:var(--text-2)}
+.callout strong{color:var(--teal-dark)}
+table{width:100%;border-collapse:collapse;margin:20px 0;background:#fff;
+  border-radius:10px;overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,0.03)}
+th,td{padding:14px 16px;text-align:left;font-size:14px;border-bottom:1px solid var(--border)}
+th{background:#f9fbfc;font-weight:700;font-size:12px;
+  letter-spacing:0.06em;text-transform:uppercase;color:var(--text-2)}
+td{color:var(--text-2)}
+td strong{color:var(--text)}
+tr:last-child td{border-bottom:none}
+.win{background:rgba(82,188,198,0.08)}
+.win td{color:var(--text)}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:24px 0}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:24px 0}
+@media(max-width:700px){.grid-2,.grid-3{grid-template-columns:1fr}}
+.card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:22px}
+.card h4{font-size:14px;font-weight:700;margin-bottom:10px}
+.card p{font-size:13.5px;margin-bottom:0}
+.badge{display:inline-block;padding:3px 10px;border-radius:100px;
+  font-size:11px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase}
+.badge-green{background:rgba(82,188,198,0.14);color:var(--teal-dark)}
+pre{background:#0a1f24;color:#e8f2f0;padding:20px;border-radius:10px;
+  overflow-x:auto;margin:16px 0;font-family:var(--mono);font-size:13px;line-height:1.6}
+pre code{background:none;color:inherit;padding:0;font-size:inherit}
+footer{border-top:1px solid var(--border);padding-top:32px;
+  color:var(--text-3);font-size:13px;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <span class="eyebrow">Investigación Segundo Momento</span>
+  <h1>Análisis comparativo de frameworks backend: <em>Node.js</em></h1>
+  <p class="lead">
+    Evaluación técnica de Node.js (NestJS) frente a Django, Flask, Ruby on Rails y Laravel,
+    con implementación de un sistema real de inteligencia de ubicación para retail.
+  </p>
+  <div class="meta">
+    <div><b>Autor</b>Andrés Sánchez</div>
+    <div><b>Fecha</b>Octubre 2026</div>
+    <div><b>Framework</b>Node.js 20 + NestJS 10</div>
+    <div><b>Proyecto</b>Sitial — Location Intelligence API</div>
+  </div>
+</header>
+
+<section>
+  <h2>1. Resumen ejecutivo</h2>
+  <p>
+    Node.js es un entorno de ejecución de JavaScript del lado del servidor construido sobre
+    el motor V8 de Chrome. Su modelo de concurrencia basado en un event loop no bloqueante
+    permite manejar miles de conexiones simultáneas con un solo hilo de ejecución.
+  </p>
+  <p>
+    En esta investigación se evalúa Node.js frente a cuatro alternativas populares
+    (Django, Flask, Ruby on Rails, Laravel) en cinco dimensiones: facilidad de uso,
+    rendimiento, escalabilidad, seguridad y casos de uso reales en producción.
+  </p>
+  <div class="callout">
+    <strong>Conclusión principal:</strong> Node.js es la mejor opción cuando el proyecto
+    requiere alto rendimiento con operaciones de entrada/salida intensivas, uso de un
+    mismo lenguaje (TypeScript) en backend y frontend, y despliegue escalable sin
+    reescritura de código.
+  </div>
+</section>
+
+<section>
+  <h2>2. ¿Qué es Node.js?</h2>
+  <p>
+    Node.js es un runtime asíncrono orientado a eventos, creado por Ryan Dahl en 2009.
+    A diferencia de otros lenguajes backend, ejecuta JavaScript en el servidor usando
+    el motor V8 y un modelo de concurrencia no bloqueante basado en el event loop.
+  </p>
+  <h3>Características distintivas</h3>
+  <ul>
+    <li><strong>Asíncrono nativo:</strong> todas las operaciones de I/O son no bloqueantes</li>
+    <li><strong>Event loop:</strong> un solo hilo gestiona miles de conexiones concurrentes</li>
+    <li><strong>NPM:</strong> el registro de paquetes más grande del mundo</li>
+    <li><strong>TypeScript:</strong> tipado estático opcional en todo el stack</li>
+    <li><strong>JavaScript universal:</strong> el mismo lenguaje en frontend y backend</li>
+  </ul>
+  <p>
+    Para el proyecto Sitial se utiliza <strong>NestJS</strong>, un framework de Node.js
+    que aporta arquitectura modular, inyección de dependencias y validación integrada,
+    manteniendo el rendimiento nativo del runtime.
+  </p>
+</section>
+
+<section>
+  <h2>3. Facilidad de uso</h2>
+  <p>
+    Node.js tiene una curva de aprendizaje <strong>media</strong>. Si el desarrollador ya
+    conoce JavaScript o TypeScript, la transición es directa. El ecosistema NPM provee
+    paquetes para prácticamente cualquier necesidad, aunque la calidad varía mucho entre
+    librerías.
+  </p>
+  <div class="grid-2">
+    <div class="card">
+      <h4>Ventajas</h4>
+      <p>
+        Documentación abundante en inglés y español. Un solo lenguaje para todo el stack.
+        NestJS aporta una arquitectura clara desde el primer día. Miles de tutoriales,
+        cursos y ejemplos disponibles.
+      </p>
+    </div>
+    <div class="card">
+      <h4>Desventajas</h4>
+      <p>
+        Requiere entender el event loop y las promesas. El ecosistema NPM cambia rápido
+        y puede generar conflictos de versiones. La validación y seguridad no vienen
+        incluidas de fábrica.
+      </p>
+    </div>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>Framework</th>
+        <th>Curva de aprendizaje</th>
+        <th>Documentación</th>
+        <th>Comunidad</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="win"><td><strong>Node.js (NestJS)</strong></td><td>Media</td><td>Excelente</td><td>Muy grande</td></tr>
+      <tr><td>Django</td><td>Media-alta</td><td>Excelente</td><td>Grande</td></tr>
+      <tr><td>Flask</td><td>Baja</td><td>Buena</td><td>Media</td></tr>
+      <tr><td>Ruby on Rails</td><td>Media</td><td>Muy buena</td><td>Media</td></tr>
+      <tr><td>Laravel</td><td>Baja-media</td><td>Excelente</td><td>Grande</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>4. Rendimiento</h2>
+  <p>
+    Node.js es uno de los frameworks backend más rápidos en operaciones de entrada/salida.
+    En benchmarks de TechEmpower alcanza <strong>entre 15.000 y 25.000 peticiones por segundo</strong>
+    según el hardware y el tipo de prueba.
+  </p>
+  <table>
+    <thead>
+      <tr>
+        <th>Framework</th>
+        <th>Req/segundo</th>
+        <th>Modelo</th>
+        <th>Motor</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="win"><td><strong>Node.js</strong></td><td>~18.000</td><td>Event loop</td><td>V8 + libuv</td></tr>
+      <tr><td>Laravel</td><td>~3.000</td><td>PHP-FPM</td><td>Nginx + PHP</td></tr>
+      <tr><td>Django</td><td>~2.500</td><td>WSGI sync</td><td>Gunicorn</td></tr>
+      <tr><td>Flask</td><td>~2.000</td><td>WSGI sync</td><td>Gunicorn</td></tr>
+      <tr><td>Ruby on Rails</td><td>~1.500</td><td>Rack sync</td><td>Puma</td></tr>
+    </tbody>
+  </table>
+  <div class="callout">
+    <strong>Impacto real en Sitial:</strong> cada análisis consulta tres APIs externas
+    (Google Places, Geocoding, Distance Matrix) cuyo tiempo promedio es 400 ms.
+    Con el event loop de Node.js, el servidor atiende cientos de análisis concurrentes
+    sin bloquear. Con Django o Flask, cada petición ocuparía un worker completo.
+  </div>
+</section>
+
+<section>
+  <h2>5. Escalabilidad</h2>
+  <p>
+    Node.js escala horizontalmente sin fricción porque no mantiene estado entre peticiones.
+    El cluster module permite aprovechar todos los núcleos del servidor levantando un
+    proceso por CPU, y Docker + Kubernetes orquestan múltiples réplicas sin coordinación
+    adicional.
+  </p>
+  <h3>Estrategias de escalabilidad</h3>
+  <ul>
+    <li><strong>Cluster module:</strong> un proceso por núcleo de CPU</li>
+    <li><strong>PM2 o Gunicorn:</strong> gestión profesional de procesos en producción</li>
+    <li><strong>Docker + Kubernetes:</strong> escalado elástico según demanda</li>
+    <li><strong>Redis:</strong> cache y sesiones compartidas entre réplicas</li>
+    <li><strong>Stateless por diseño:</strong> cero coordinación entre instancias</li>
+  </ul>
+  <table>
+    <thead>
+      <tr>
+        <th>Framework</th>
+        <th>Horizontal</th>
+        <th>Vertical</th>
+        <th>Cuello de botella</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="win"><td><strong>Node.js</strong></td><td>Excelente</td><td>Bueno</td><td>Single thread por proceso</td></tr>
+      <tr><td>Django</td><td>Buena</td><td>Buena</td><td>Workers síncronos</td></tr>
+      <tr><td>Flask</td><td>Buena</td><td>Buena</td><td>Workers síncronos</td></tr>
+      <tr><td>Rails</td><td>Buena</td><td>Media</td><td>Memoria por proceso</td></tr>
+      <tr><td>Laravel</td><td>Buena</td><td>Media</td><td>PHP-FPM workers</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>6. Seguridad</h2>
+  <p>
+    Node.js no incluye autenticación ni autorización por defecto. Provee herramientas
+    para implementar buenas prácticas, pero la responsabilidad de aplicarlas es del
+    desarrollador. En Sitial se implementaron las siguientes medidas:
+  </p>
+  <div class="grid-3">
+    <div class="card">
+      <span class="badge badge-green">Implementado</span>
+      <h4 style="margin-top:10px">JWT con expiración</h4>
+      <p>Tokens firmados con HS256 y expiración explícita en cada petición.</p>
+    </div>
+    <div class="card">
+      <span class="badge badge-green">Implementado</span>
+      <h4 style="margin-top:10px">Bcrypt para passwords</h4>
+      <p>Hash adaptativo con salt único por usuario.</p>
+    </div>
+    <div class="card">
+      <span class="badge badge-green">Implementado</span>
+      <h4 style="margin-top:10px">Validación con DTOs</h4>
+      <p>class-validator valida toda entrada antes de llegar a los servicios.</p>
+    </div>
+    <div class="card">
+      <span class="badge badge-green">Implementado</span>
+      <h4 style="margin-top:10px">CORS restrictivo</h4>
+      <p>Solo dominios explícitos pueden consumir la API.</p>
+    </div>
+    <div class="card">
+      <span class="badge badge-green">Implementado</span>
+      <h4 style="margin-top:10px">Prisma parametrizado</h4>
+      <p>Prisma usa consultas preparadas. Cero concatenación SQL.</p>
+    </div>
+    <div class="card">
+      <span class="badge badge-green">Implementado</span>
+      <h4 style="margin-top:10px">Guards globales</h4>
+      <p>JwtAuthGuard protege todas las rutas excepto las marcadas como públicas.</p>
+    </div>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>Framework</th>
+        <th>Auth integrada</th>
+        <th>Admin panel</th>
+        <th>OWASP top 10</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="win"><td><strong>Node.js</strong></td><td>Manual (Passport)</td><td>No</td><td>Manual controlado</td></tr>
+      <tr><td>Django</td><td>Sí</td><td>Sí</td><td>Cubierto por defecto</td></tr>
+      <tr><td>Flask</td><td>Extensiones</td><td>No</td><td>Manual</td></tr>
+      <tr><td>Rails</td><td>Sí</td><td>Gemas</td><td>Cubierto por defecto</td></tr>
+      <tr><td>Laravel</td><td>Sí</td><td>Sí (Nova)</td><td>Cubierto por defecto</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>7. Casos de uso reales en producción</h2>
+  <p>Node.js es usado por empresas de distintos tamaños y sectores:</p>
+  <ul>
+    <li><strong>Netflix</strong> — backend de streaming y APIs internas</li>
+    <li><strong>Uber</strong> — despacho de viajes y matching en tiempo real</li>
+    <li><strong>LinkedIn</strong> — app móvil y servicios de mensajería</li>
+    <li><strong>PayPal</strong> — procesamiento de pagos y APIs de comercio</li>
+    <li><strong>Walmart</strong> — plataforma de e-commerce durante Black Friday</li>
+    <li><strong>NASA</strong> — herramientas internas de visualización de datos</li>
+    <li><strong>Twitter</strong> — parte del backend de timelines</li>
+    <li><strong>Trello</strong> — backend completo de la aplicación</li>
+  </ul>
+</section>
+
+<section>
+  <h2>8. Ejemplo funcional: API de Sitial</h2>
+  <p>
+    El proyecto incluye un backend Node.js + NestJS real con autenticación JWT, análisis
+    geoespacial, motor de scoring, integración con Google Maps y persistencia en PostgreSQL
+    mediante Prisma.
+  </p>
+  <h3>Endpoints implementados</h3>
+  <pre><code>POST   /api/v1/auth/register
+POST   /api/v1/auth/login
+GET    /api/v1/auth/me
+
+POST   /api/v1/competitors/search
+
+POST   /api/v1/analysis
+GET    /api/v1/analysis
+DELETE /api/v1/analysis/{id}
+
+GET    /api/v1/health</code></pre>
+
+  <h3>Ejemplo de petición</h3>
+  <pre><code>POST /api/v1/analysis
+Authorization: Bearer eyJhbGc...
+
+{
+  "coordinates": { "lat": 4.6768, "lng": -74.0483 },
+  "businessType": "cafe",
+  "radiusMeters": 800,
+  "weights": {
+    "footTraffic": 35,
+    "competition": 25,
+    "demographics": 25,
+    "accessibility": 15
+  },
+  "label": "Zona Rosa · Chapinero"
+}</code></pre>
+
+  <h3>Respuesta del servidor</h3>
+  <pre><code>{
+  "id": "a3f2c1b8-...",
+  "overallScore": 82,
+  "verdict": "optimal",
+  "metrics": [
+    { "name": "Afluencia", "value": 78 },
+    { "name": "Competencia", "value": 37 },
+    { "name": "Demografía", "value": 88 },
+    { "name": "Accesibilidad", "value": 72 }
+  ],
+  "competitors": [ /* 7 competidores reales */ ],
+  "footTrafficPeak": 6200
+}</code></pre>
+
+  <h3>Arquitectura por capas</h3>
+  <pre><code>backend/src/
+  auth/              Autenticación con JWT
+  google-maps/       Cliente HTTP hacia Google
+  competitors/       Búsqueda y análisis de competidores
+  analysis/          Orquestación + scoring
+    services/        Lógica de negocio pura
+    dto/             Contratos de entrada
+  prisma/            Acceso a PostgreSQL
+
+frontend/src/
+  pages/             Landing, Login, Register, Dashboard
+  lib/api.ts         Cliente HTTP tipado
+  context/           Estado global de autenticación
+  types/             Tipos compartidos con el backend</code></pre>
+</section>
+
+<section>
+  <h2>9. Comparativa final</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Criterio</th>
+        <th>Node.js</th>
+        <th>Django</th>
+        <th>Flask</th>
+        <th>Rails</th>
+        <th>Laravel</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="win">
+        <td><strong>Rendimiento</strong></td>
+        <td>Muy bueno</td><td>Medio</td><td>Medio</td><td>Medio</td><td>Medio</td>
+      </tr>
+      <tr class="win">
+        <td><strong>Async nativo</strong></td>
+        <td>Sí</td><td>Parcial</td><td>No</td><td>No</td><td>No</td>
+      </tr>
+      <tr class="win">
+        <td><strong>TS end-to-end</strong></td>
+        <td>Sí</td><td>No</td><td>No</td><td>No</td><td>No</td>
+      </tr>
+      <tr>
+        <td><strong>Docs automáticas</strong></td>
+        <td>Sí (NestJS)</td><td>Parcial</td><td>No</td><td>No</td><td>No</td>
+      </tr>
+      <tr>
+        <td><strong>Baterías incluidas</strong></td>
+        <td>No</td><td>Sí</td><td>No</td><td>Sí</td><td>Sí</td>
+      </tr>
+      <tr>
+        <td><strong>Curva de aprendizaje</strong></td>
+        <td>Media</td><td>Alta</td><td>Baja</td><td>Media</td><td>Baja</td>
+      </tr>
+      <tr>
+        <td><strong>Comunidad LATAM</strong></td>
+        <td>Muy grande</td><td>Grande</td><td>Media</td><td>Media</td><td>Grande</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>10. Conclusiones</h2>
+  <p>Node.js es la mejor elección cuando el proyecto requiere:</p>
+  <ul>
+    <li>Alto rendimiento con muchas peticiones concurrentes</li>
+    <li>Integración con APIs externas lentas mediante async/await</li>
+    <li>Un solo lenguaje para frontend y backend</li>
+    <li>Tipos compartidos entre capas del sistema</li>
+    <li>Despliegue escalable en contenedores</li>
+    <li>Comunidad grande y ofertas laborales abundantes</li>
+  </ul>
+  <p>No es la mejor elección si:</p>
+  <ul>
+    <li>Se necesita un panel de administración listo (Django lo trae)</li>
+    <li>El equipo no conoce JavaScript o TypeScript</li>
+    <li>El proyecto es intensivo en CPU (cálculos matemáticos pesados)</li>
+  </ul>
+  <div class="callout">
+    <strong>Recomendación final para Sitial:</strong> Node.js con NestJS fue la decisión
+    correcta. El proyecto consulta tres APIs externas cuyo tiempo de respuesta promedia
+    400 ms. Un framework síncrono bloquearía un worker completo durante ese tiempo.
+    Con Node.js, el servidor maneja cientos de análisis concurrentes con hardware mínimo,
+    y TypeScript compartido entre backend y frontend elimina una clase entera de errores
+    de integración.
+  </div>
+</section>
+
+<footer>
+  Informe técnico — Investigación Segundo Momento · Octubre 2026 · Andrés Sánchez
+</footer>
+
+</div>
+</body>
+</html>

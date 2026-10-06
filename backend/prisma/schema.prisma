@@ -1,0 +1,43 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String     @id @default(uuid())
+  email        String     @unique
+  passwordHash String     @map("password_hash")
+  fullName     String     @map("full_name")
+  isActive     Boolean    @default(true) @map("is_active")
+  analyses     Analysis[]
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+model Analysis {
+  id              String   @id @default(uuid())
+  userId          String   @map("user_id")
+  label           String?
+  latitude        Float
+  longitude       Float
+  businessType    String   @map("business_type")
+  radiusMeters    Int      @map("radius_meters")
+  overallScore    Int      @map("overall_score")
+  verdict         String
+  weights         Json
+  metrics         Json
+  competitors     Json
+  address         Json?
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@map("analyses")
+}

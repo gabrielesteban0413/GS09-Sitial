@@ -1,0 +1,57 @@
+services:
+  api:
+    build:
+      context: ./backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      NODE_ENV: production
+      PORT: 8000
+      DATABASE_URL: postgresql://sitial:${POSTGRES_PASSWORD:-sitial}@postgres:5432/sitial?schema=public
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRES_IN: 3600
+      GOOGLE_MAPS_API_KEY: ${GOOGLE_MAPS_API_KEY}
+      CORS_ORIGIN: http://localhost:5173
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - sitial
+
+  web:
+    build:
+      context: ./frontend
+    restart: unless-stopped
+    ports:
+      - "5173:80"
+    depends_on:
+      - api
+    networks:
+      - sitial
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: sitial
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-sitial}
+      POSTGRES_DB: sitial
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sitial -d sitial"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - sitial
+
+volumes:
+  postgres_data:
+
+networks:
+  sitial:
+    driver: bridge
