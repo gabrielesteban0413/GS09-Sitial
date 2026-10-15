@@ -10,3 +10,16 @@
   --radius:8px;--radius-lg:12px;
   --shadow:0 2px 8px rgba(0,0,0,0.06);--shadow-md:0 4px 16px rgba(0,0,0,0.08);
 }
+
+/* Tokens adicionales del Dashboard (diseño GeoPulse) */
+:root{
+  --bg-sidebar:#ffffff;--bg-active:#e4eef0;--border-hover:#a8b8bd;
+  --black:#0a1f24;--teal-deep:#1f5a60;--mint-dim:#8fbfb8;
+  --teal-bg:rgba(82,188,198,0.10);--teal-bg-2:rgba(82,188,198,0.16);--teal-bg-3:rgba(82,188,198,0.14);
+  --teal-border:rgba(58,154,163,0.30);
+  --coral-bg-2:rgba(229,104,90,0.10);--coral-border:rgba(229,104,90,0.28);
+  --amber-soft:#e8b84d;--amber-bg-2:rgba(217,154,43,0.10);--amber-border:rgba(217,154,43,0.28);
+  --lavender:#7d6fb0;
+  --map-bg:#eef3f4;--map-block:#ffffff;--map-park:#d8e8e0;--map-road-stroke:#e2e9eb;
+  --map-label:#7a8a8f;--map-label-strong:#5a6d73;
+}
