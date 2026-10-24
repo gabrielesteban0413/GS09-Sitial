@@ -1,53 +1,52 @@
-import { ConflictException, Injectable, UnauthorizedException } from "@nestjs/common";
-import { JwtService } from "@nestjs/jwt";
-import * as bcrypt from "bcrypt";
-import { PrismaService } from "../prisma/prisma.service";
-import { RegisterDto } from "./dto/register.dto";
-import { LoginDto } from "./dto/login.dto";
+import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { PrismaService } from '../prisma/prisma.service';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
-  constructor(
-    private prisma: PrismaService,
-    private jwt: JwtService,
-  ) {}
+  constructor(private prisma: PrismaService, private jwt: JwtService) {}
 
-  async register(dto: RegisterDto) {
-    const existing = await this.prisma.user.findUnique({ where: { email: dto.email } });
-    if (existing) throw new ConflictException("Email already registered");
+  async register(dto: any) {
+    const exists = await this.prisma.user.findUnique({ where: { email: dto.email } });
+    if (exists) throw new ConflictException('El correo ya está registrado');
 
+    const hash = await bcrypt.hash(dto.password, 10);
     const user = await this.prisma.user.create({
-      data: {
-        email: dto.email,
-        passwordHash: await bcrypt.hash(dto.password, 10),
+      data: { 
+        email: dto.email, 
+        passwordHash: hash, 
         fullName: dto.fullName,
+        isActive: true
       },
     });
-
-    return this.buildResponse(user);
+    return this.signToken(user.id, user.email);
   }
 
-  async login(dto: LoginDto) {
+  async login(dto: any) {
     const user = await this.prisma.user.findUnique({ where: { email: dto.email } });
     if (!user || !(await bcrypt.compare(dto.password, user.passwordHash))) {
-      throw new UnauthorizedException("Invalid credentials");
+      throw new UnauthorizedException('Credenciales inválidas');
     }
-    return this.buildResponse(user);
+    return this.signToken(user.id, user.email);
   }
 
-  private buildResponse(user: { id: string; email: string; fullName: string; isActive: boolean; createdAt: Date }) {
-    const accessToken = this.jwt.sign({ sub: user.id });
-    return {
-      accessToken,
-      tokenType: "bearer",
-      expiresIn: 3600,
-      user: {
-        id: user.id,
-        email: user.email,
+  async signToken(userId: string, email: string) {
+    const token = await this.jwt.signAsync({ sub: userId, email });
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    
+    if (!user) {
+      throw new UnauthorizedException('Usuario no encontrado');
+    }
+
+    return { 
+      accessToken: token, 
+      user: { 
+        id: user.id, 
+        email: user.email, 
         fullName: user.fullName,
-        isActive: user.isActive,
-        createdAt: user.createdAt,
-      },
+        isActive: user.isActive
+      } 
     };
   }
 }

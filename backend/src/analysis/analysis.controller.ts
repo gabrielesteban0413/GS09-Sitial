@@ -1,30 +1,19 @@
-import { Body, Controller, Delete, Get, Param, Post, Query } from "@nestjs/common";
-import { ApiTags } from "@nestjs/swagger";
-import { AnalysisService } from "./analysis.service";
-import { CreateAnalysisDto } from "./dto/create-analysis.dto";
-import { CurrentUser } from "../auth/decorators/current-user.decorator";
+import { Controller, Post, Get, Body, Req, UseGuards } from '@nestjs/common';
+import { AnalysisService } from './analysis.service';
+import { AuthGuard } from '@nestjs/passport';
 
-@ApiTags("analysis")
-@Controller("analysis")
+@Controller('analysis')
+@UseGuards(AuthGuard('jwt'))
 export class AnalysisController {
-  constructor(private service: AnalysisService) {}
+  constructor(private analysisService: AnalysisService) {}
 
   @Post()
-  create(@Body() dto: CreateAnalysisDto, @CurrentUser("id") userId: string) {
-    return this.service.create(dto, userId);
+  create(@Req() req: any, @Body() dto: any) {
+    return this.analysisService.create(req.user.userId, dto);
   }
 
   @Get()
-  list(
-    @CurrentUser("id") userId: string,
-    @Query("page") page = "1",
-    @Query("page_size") pageSize = "20",
-  ) {
-    return this.service.list(userId, parseInt(page, 10), parseInt(pageSize, 10));
-  }
-
-  @Delete(":id")
-  remove(@Param("id") id: string, @CurrentUser("id") userId: string) {
-    return this.service.remove(id, userId);
+  findAll(@Req() req: any) {
+    return this.analysisService.findAll(req.user.userId);
   }
 }

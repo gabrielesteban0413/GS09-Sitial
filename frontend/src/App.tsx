@@ -1,23 +1,62 @@
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-import { AuthProvider } from "@/context/AuthContext";
-import { ProtectedRoute } from "@/components/ProtectedRoute";
-import { Landing } from "@/pages/Landing";
-import { Login } from "@/pages/Login";
-import { Register } from "@/pages/Register";
-import { Dashboard } from "@/pages/Dashboard";
+import { BrowserRouter, Routes, Route, Navigate, Outlet } from "react-router-dom";
+import { AuthProvider } from "./context/AuthContext";
+import { useAuth } from "./hooks/useAuth";
+import { PublicLayout } from "./layouts/PublicLayout";
+import { Sidebar } from "./components/Sidebar";
+import { Landing } from "./pages/Landing";
+import { Login } from "./pages/Login";
+import { Register } from "./pages/Register";
+import { Pago } from "./pages/Pago";
+import { Nosotros } from "./pages/Nosotros";
+import { Contacto } from "./pages/Contacto";
+import { Privacidad } from "./pages/Privacidad";
+import { Terminos } from "./pages/Terminos";
+import { Cookies } from "./pages/Cookies";
+import { Dashboard } from "./pages/Dashboard";
+import { Analysis } from "./pages/Analysis";
+import { Layers } from "./pages/Layers";
+import { Documentation } from "./pages/Documentation";
+import "./styles/public.css";
+
+function PrivateLayout() {
+    const { user } = useAuth();
+    if (!user) return <Navigate to="/login" replace />;
+    return (
+        <div style={{ display: "flex", height: "100vh", overflow: "hidden" }}>
+            <Sidebar />
+            <main style={{ flex: 1, overflowY: "auto" }}>
+                <Outlet />
+            </main>
+        </div>
+    );
+}
 
 export function App() {
-  return (
-    <BrowserRouter>
-      <AuthProvider>
-        <Routes>
-          <Route path="/" element={<Landing />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/app" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </AuthProvider>
-    </BrowserRouter>
-  );
+    return (
+        <AuthProvider>
+            <BrowserRouter>
+                <Routes>
+                    <Route element={<PublicLayout />}>
+                        <Route path="/" element={<Landing />} />
+                        <Route path="/pago" element={<Pago />} />
+                        <Route path="/nosotros" element={<Nosotros />} />
+                        <Route path="/contacto" element={<Contacto />} />
+                        <Route path="/privacidad" element={<Privacidad />} />
+                        <Route path="/terminos" element={<Terminos />} />
+                        <Route path="/cookies" element={<Cookies />} />
+                    </Route>
+                    
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/register" element={<Register />} />
+                    
+                    <Route path="/app" element={<PrivateLayout />}>
+                        <Route index element={<Dashboard />} />
+                        <Route path="analisis" element={<Analysis />} />
+                        <Route path="capas" element={<Layers />} />
+                        <Route path="documentacion" element={<Documentation />} />
+                    </Route>
+                </Routes>
+            </BrowserRouter>
+        </AuthProvider>
+    );
 }

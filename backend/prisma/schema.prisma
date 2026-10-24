@@ -10,34 +10,43 @@ datasource db {
 model User {
   id           String     @id @default(uuid())
   email        String     @unique
-  passwordHash String     @map("password_hash")
-  fullName     String     @map("full_name")
-  isActive     Boolean    @default(true) @map("is_active")
+  passwordHash String
+  fullName     String
+  isActive     Boolean    @default(true)
   analyses     Analysis[]
-  createdAt    DateTime   @default(now()) @map("created_at")
-  updatedAt    DateTime   @updatedAt @map("updated_at")
-
-  @@map("users")
+  createdAt    DateTime   @default(now())
 }
 
 model Analysis {
-  id              String   @id @default(uuid())
-  userId          String   @map("user_id")
+  id              String       @id @default(uuid())
+  userId          String
   label           String?
   latitude        Float
   longitude       Float
-  businessType    String   @map("business_type")
-  radiusMeters    Int      @map("radius_meters")
-  overallScore    Int      @map("overall_score")
+  businessType    String
+  radiusMeters    Int
+  overallScore    Int
   verdict         String
   weights         Json
   metrics         Json
-  competitors     Json
-  address         Json?
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
+  footTrafficPeak Int
+  footTrafficAvg  Int
+  competitors     Competitor[]
+  user            User         @relation(fields: [userId], references: [id])
+  createdAt       DateTime     @default(now())
+}
 
-  @@index([userId])
-  @@map("analyses")
+model Competitor {
+  id             String   @id @default(uuid())
+  analysisId     String
+  placeId        String
+  name           String
+  category       String
+  latitude       Float
+  longitude      Float
+  distanceMeters Float
+  rating         Float?
+  reviewCount    Int
+  threatLevel    String
+  analysis       Analysis @relation(fields: [analysisId], references: [id], onDelete: Cascade)
 }
