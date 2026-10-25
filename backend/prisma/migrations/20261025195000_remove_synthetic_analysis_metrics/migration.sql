@@ -1,0 +1,5 @@
+ALTER TABLE "Analysis"
+  ALTER COLUMN "overallScore" DROP NOT NULL,
+  ALTER COLUMN "verdict" DROP NOT NULL,
+  ALTER COLUMN "footTrafficPeak" DROP NOT NULL,
+  ALTER COLUMN "footTrafficAvg" DROP NOT NULL;

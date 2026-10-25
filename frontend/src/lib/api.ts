@@ -1,6 +1,7 @@
 import type {
   AnalysisResult, AnalysisSummary, TokenResponse, User,
   Coordinates, BusinessType, ScoreWeights,
+  LayerCategory, LocationLayer, LocationPin,
 } from "@/types";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "/api/v1";
@@ -65,5 +66,37 @@ export const api = {
       request<{ items: AnalysisSummary[]; total: number }>(
         `/analysis?page=${page}&page_size=${pageSize}`),
     remove: (id: string) => request<void>(`/analysis/${id}`, { method: "DELETE" }),
+  },
+  layers: {
+    list: () => request<LocationLayer[]>("/layers"),
+    create: (data: { name: string; description?: string; color: string }) =>
+      request<LocationLayer>("/layers", { method: "POST", body: data }),
+    remove: (id: string) => request<{ success: boolean }>(`/layers/${id}`, { method: "DELETE" }),
+    locations: (layerId: string) =>
+      request<LocationPin[]>(`/layers/${layerId}/locations`),
+    addLocation: (layerId: string, data: {
+      name: string;
+      address?: string;
+      category: LayerCategory;
+      notes?: string;
+      latitude: number;
+      longitude: number;
+    }) => request<LocationPin>(`/layers/${layerId}/locations`, { method: "POST", body: data }),
+    updateLocation: (id: string, data: {
+      name: string;
+      address?: string;
+      category: LayerCategory;
+      notes?: string;
+      latitude: number;
+      longitude: number;
+    }) => request<LocationPin>(`/locations/${id}`, { method: "PATCH", body: data }),
+    removeLocation: (id: string) =>
+      request<{ success: boolean }>(`/locations/${id}`, { method: "DELETE" }),
+  },
+  places: {
+    geocode: (address: string) =>
+      request<{ coordinates: Coordinates; formattedAddress: string }>(
+        `/places/geocode?address=${encodeURIComponent(address)}`,
+      ),
   },
 };

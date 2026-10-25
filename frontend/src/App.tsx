@@ -2,7 +2,6 @@ import { BrowserRouter, Routes, Route, Navigate, Outlet } from "react-router-dom
 import { AuthProvider } from "./context/AuthContext";
 import { useAuth } from "./hooks/useAuth";
 import { PublicLayout } from "./layouts/PublicLayout";
-import { Sidebar } from "./components/Sidebar";
 import { Landing } from "./pages/Landing";
 import { Login } from "./pages/Login";
 import { Register } from "./pages/Register";
@@ -19,22 +18,16 @@ import { Documentation } from "./pages/Documentation";
 import "./styles/public.css";
 
 function PrivateLayout() {
-    const { user } = useAuth();
+    const { user, loading } = useAuth();
+    if (loading) return <div className="loading-page">Cargando...</div>;
     if (!user) return <Navigate to="/login" replace />;
-    return (
-        <div style={{ display: "flex", height: "100vh", overflow: "hidden" }}>
-            <Sidebar />
-            <main style={{ flex: 1, overflowY: "auto" }}>
-                <Outlet />
-            </main>
-        </div>
-    );
+    return <Outlet />;
 }
 
 export function App() {
     return (
         <AuthProvider>
-            <BrowserRouter>
+            <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
                 <Routes>
                     <Route element={<PublicLayout />}>
                         <Route path="/" element={<Landing />} />
@@ -52,9 +45,14 @@ export function App() {
                     <Route path="/app" element={<PrivateLayout />}>
                         <Route index element={<Dashboard />} />
                         <Route path="analisis" element={<Analysis />} />
+                        <Route path="analysis" element={<Navigate to="/app/analisis" replace />} />
                         <Route path="capas" element={<Layers />} />
                         <Route path="documentacion" element={<Documentation />} />
                     </Route>
+                    <Route path="/analisis" element={<Navigate to="/app/analisis" replace />} />
+                    <Route path="/analysis" element={<Navigate to="/app/analisis" replace />} />
+                    <Route path="/dashboard" element={<Navigate to="/app" replace />} />
+                    <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
             </BrowserRouter>
         </AuthProvider>

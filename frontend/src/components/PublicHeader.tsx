@@ -6,12 +6,15 @@ export function PublicHeader() {
         <header className="site-header">
             <div className="header-inner">
                 <Link to="/" className="site-brand">
-                    <span className="brand-mark">S</span>
+                    <span className="brand-mark">
+                        <img src="/assets/images/logos/logo.png" alt="" />
+                    </span>
                     <span>Sitial</span>
                 </Link>
-                <nav className="site-nav">
-                    <a href="/#caracteristicas">Características</a>
-                    <a href="/#precios">Precios</a>
+                <nav className="site-nav" aria-label="Navegación principal">
+                    <a href="/#funciones">Funciones</a>
+                    <a href="/#como-funciona">Cómo funciona</a>
+                    <a href="/#datos">Datos</a>
                     <Link to="/nosotros">Nosotros</Link>
                     <Link to="/contacto">Contacto</Link>
                 </nav>

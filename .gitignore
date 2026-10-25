@@ -1,10 +1,12 @@
 node_modules/
 dist/
 build/
+/backend/generated/
 .env
 .env.local
 .DS_Store
 *.log
+*.tsbuildinfo
 npm-debug.log*
 coverage/
 .idea/

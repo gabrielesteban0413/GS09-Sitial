@@ -8,15 +8,18 @@ export function PublicFooter() {
                 <div className="footer-grid">
                     <div className="footer-brand">
                         <Link to="/" className="site-brand">
-                            <span className="brand-mark">S</span>
+                            <span className="brand-mark">
+                                <img src="/assets/images/logos/logo.png" alt="" />
+                            </span>
                             <span>Sitial</span>
                         </Link>
-                        <p>Location Intelligence Platform para PyMEs de Latinoamérica. Decide con datos, no con corazonadas.</p>
+                        <p>Explora ubicaciones, consulta negocios cercanos y organiza tus alternativas en el mapa.</p>
                     </div>
                     <div className="footer-col">
                         <h4>Producto</h4>
-                        <a href="/#caracteristicas">Características</a>
-                        <a href="/#precios">Precios</a>
+                        <a href="/#funciones">Funciones</a>
+                        <a href="/#como-funciona">Cómo funciona</a>
+                        <a href="/#datos">Datos</a>
                         <Link to="/app">Dashboard</Link>
                     </div>
                     <div className="footer-col">

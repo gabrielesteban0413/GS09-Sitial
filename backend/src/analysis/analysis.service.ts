@@ -1,22 +1,39 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { CompetitorsService } from '../competitors/competitors.service';
+import { GoogleMapsService } from '../google-maps/google-maps.service';
+import { CreateAnalysisDto } from './dto/create-analysis.dto';
+import { ScoringService } from './services/scoring.service';
+
+const DEFAULT_WEIGHTS = {
+  footTraffic: 35,
+  competition: 25,
+  demographics: 25,
+  accessibility: 15,
+};
 
 @Injectable()
 export class AnalysisService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly competitorsService: CompetitorsService,
+    private readonly googleMaps: GoogleMapsService,
+    private readonly scoringService: ScoringService,
+  ) {}
 
-  async create(userId: string, dto: any) {
-    const score = Math.floor(Math.random() * 40) + 60;
-    const verdict = score >= 75 ? 'optimal' : score >= 55 ? 'review' : 'discard';
-    
-    const metrics = [
-      { name: 'Afluencia', value: 78, description: 'Flujo peatonal estimado' },
-      { name: 'Competencia', value: 45, description: 'Densidad de competidores' },
-      { name: 'Demografía', value: 85, description: 'Perfil del consumidor' },
-      { name: 'Accesibilidad', value: 70, description: 'Transporte cercano' },
-    ];
+  async create(userId: string, dto: CreateAnalysisDto) {
+    const location = await this.googleMaps.validateLandCoordinates(
+      dto.coordinates.lat,
+      dto.coordinates.lng,
+    );
+    const competitorSearch = await this.competitorsService.search({
+      coordinates: dto.coordinates,
+      radiusMeters: dto.radiusMeters,
+      businessType: dto.businessType,
+    });
+    const scoring = this.scoringService.calculate(competitorSearch.competitors);
 
-    const analysis = await this.prisma.analysis.create({
+    const saved = await this.prisma.analysis.create({
       data: {
         userId,
         label: dto.label,
@@ -24,33 +41,59 @@ export class AnalysisService {
         longitude: dto.coordinates.lng,
         businessType: dto.businessType,
         radiusMeters: dto.radiusMeters,
-        overallScore: score,
-        verdict: verdict,
-        weights: dto.weights,
-        metrics: metrics,
-        footTrafficPeak: 6200,
-        footTrafficAvg: 4800,
+        overallScore: null,
+        verdict: null,
+        weights: { ...(dto.weights ?? DEFAULT_WEIGHTS) },
+        metrics: scoring.metrics,
+        footTrafficPeak: null,
+        footTrafficAvg: null,
+        competitors: {
+          create: competitorSearch.competitors.map((competitor) => ({
+            placeId: competitor.placeId,
+            name: competitor.name,
+            category: competitor.category,
+            latitude: competitor.coordinates.lat,
+            longitude: competitor.coordinates.lng,
+            distanceMeters: competitor.distanceMeters,
+            rating: competitor.rating,
+            reviewCount: competitor.reviewCount,
+            threatLevel: competitor.threatLevel,
+          })),
+        },
       },
-    });
-
-    const competitorsData = [
-      { placeId: '1', name: 'Competidor A', category: dto.businessType, latitude: dto.coordinates.lat + 0.001, longitude: dto.coordinates.lng + 0.001, distanceMeters: 150, rating: 4.5, reviewCount: 120, threatLevel: 'medium' },
-      { placeId: '2', name: 'Competidor B', category: dto.businessType, latitude: dto.coordinates.lat - 0.001, longitude: dto.coordinates.lng - 0.001, distanceMeters: 250, rating: 4.8, reviewCount: 300, threatLevel: 'high' },
-    ];
-
-    for (const c of competitorsData) {
-      await this.prisma.competitor.create({
-        data: { ...c, analysisId: analysis.id },
-      });
-    }
-
-    return this.prisma.analysis.findUnique({
-      where: { id: analysis.id },
       include: { competitors: true },
     });
+
+    return {
+      id: saved.id,
+      label: saved.label,
+      coordinates: { lat: saved.latitude, lng: saved.longitude },
+      address: { formatted: location.formatted_address },
+      businessType: saved.businessType,
+      radiusMeters: saved.radiusMeters,
+      weights: saved.weights,
+      overallScore: saved.overallScore,
+      verdict: saved.verdict,
+      metrics: saved.metrics,
+      competitors: competitorSearch.competitors,
+      footTrafficPeak: saved.footTrafficPeak,
+      footTrafficAverage: saved.footTrafficAvg,
+      createdAt: saved.createdAt,
+    };
   }
 
   async findAll(userId: string) {
-    return this.prisma.analysis.findMany({ where: { userId }, orderBy: { createdAt: 'desc' } });
+    const analyses = await this.prisma.analysis.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+    });
+    return analyses.map((analysis) => ({
+      ...analysis,
+      overallScore: null,
+      verdict: null,
+      metrics: [],
+      footTrafficPeak: null,
+      footTrafficAvg: null,
+    }));
   }
 }

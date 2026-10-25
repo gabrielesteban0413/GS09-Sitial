@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  output   = "../generated/prisma"
 }
 
 datasource db {
@@ -14,7 +15,40 @@ model User {
   fullName     String
   isActive     Boolean    @default(true)
   analyses     Analysis[]
+  layers       Layer[]
   createdAt    DateTime   @default(now())
+}
+
+model Layer {
+  id          String     @id @default(uuid())
+  userId      String
+  name        String
+  description String?
+  color       String     @default("#3a9aa3")
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  locations   Location[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([userId])
+  @@map("layers")
+}
+
+model Location {
+  id        String   @id @default(uuid())
+  layerId   String
+  name      String
+  address   String?
+  category  String   @default("otro")
+  notes     String?
+  latitude  Float
+  longitude Float
+  layer     Layer    @relation(fields: [layerId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([layerId])
+  @@map("locations")
 }
 
 model Analysis {
@@ -25,12 +59,12 @@ model Analysis {
   longitude       Float
   businessType    String
   radiusMeters    Int
-  overallScore    Int
-  verdict         String
+  overallScore    Int?
+  verdict         String?
   weights         Json
   metrics         Json
-  footTrafficPeak Int
-  footTrafficAvg  Int
+  footTrafficPeak Int?
+  footTrafficAvg  Int?
   competitors     Competitor[]
   user            User         @relation(fields: [userId], references: [id])
   createdAt       DateTime     @default(now())
