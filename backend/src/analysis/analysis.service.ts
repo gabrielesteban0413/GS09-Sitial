@@ -1,153 +1,99 @@
-import { Injectable } from "@nestjs/common";
-import { PrismaService } from "../prisma/prisma.service";
-import { GoogleMapsService } from "../google-maps/google-maps.service";
-import { CompetitorsService } from "../competitors/competitors.service";
-import { ScoringService } from "./services/scoring.service";
-import { DemographicService } from "./services/demographic.service";
-import { CreateAnalysisDto } from "./dto/create-analysis.dto";
+import { Injectable } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
+import { CompetitorsService } from '../competitors/competitors.service';
+import { GoogleMapsService } from '../google-maps/google-maps.service';
+import { CreateAnalysisDto } from './dto/create-analysis.dto';
+import { ScoringService } from './services/scoring.service';
+
+const DEFAULT_WEIGHTS = {
+  footTraffic: 35,
+  competition: 25,
+  demographics: 25,
+  accessibility: 15,
+};
 
 @Injectable()
 export class AnalysisService {
   constructor(
-    private prisma: PrismaService,
-    private maps: GoogleMapsService,
-    private competitors: CompetitorsService,
-    private scoring: ScoringService,
-    private demographic: DemographicService,
+    private readonly prisma: PrismaService,
+    private readonly competitorsService: CompetitorsService,
+    private readonly googleMaps: GoogleMapsService,
+    private readonly scoringService: ScoringService,
   ) {}
 
-  async create(dto: CreateAnalysisDto, userId: string) {
-    const weights = dto.weights ?? {
-      footTraffic: 35,
-      competition: 25,
-      demographics: 25,
-      accessibility: 15,
-    };
-
-    const compResult = await this.competitors.search({
+  async create(userId: string, dto: CreateAnalysisDto) {
+    const location = await this.googleMaps.validateLandCoordinates(
+      dto.coordinates.lat,
+      dto.coordinates.lng,
+    );
+    const competitorSearch = await this.competitorsService.search({
       coordinates: dto.coordinates,
       radiusMeters: dto.radiusMeters,
       businessType: dto.businessType,
     });
-    const competitors = compResult.competitors;
-
-    const demo = this.demographic.profile(dto.coordinates.lat, dto.coordinates.lng);
-
-    const areaKm2 = Math.PI * Math.pow(dto.radiusMeters / 1000, 2);
-    const footPeak = Math.max(
-      500,
-      Math.round(demo.populationDensity * areaKm2 * 0.15 * (1 + Math.min(0.5, competitors.length * 0.05))),
-    );
-    const footAvg = Math.round(footPeak * 0.78);
-
-    const transit = Math.max(
-      2,
-      Math.abs(this.hashCode(`${dto.coordinates.lat.toFixed(3)},${dto.coordinates.lng.toFixed(3)}`)) % 10,
-    );
-
-    const { overall, verdict, metrics } = this.scoring.calculate({
-      businessType: dto.businessType,
-      weights,
-      competitors,
-      populationDensity: demo.populationDensity,
-      medianAge: demo.medianAge,
-      medianIncome: demo.medianIncomeUsd,
-      transitStations: transit,
-      footTrafficPeak: footPeak,
-    });
-
-    let addressData: any = null;
-    try {
-      const geo = await this.maps.reverseGeocode(dto.coordinates.lat, dto.coordinates.lng);
-      const r = geo.results?.[0];
-      if (r) {
-        addressData = {
-          formatted: r.formatted_address,
-          city: this.component(r.address_components, "locality"),
-          country: this.component(r.address_components, "country"),
-        };
-      }
-    } catch {}
+    const scoring = this.scoringService.calculate(competitorSearch.competitors);
 
     const saved = await this.prisma.analysis.create({
       data: {
         userId,
-        label: dto.label ?? null,
+        label: dto.label,
         latitude: dto.coordinates.lat,
         longitude: dto.coordinates.lng,
         businessType: dto.businessType,
         radiusMeters: dto.radiusMeters,
-        overallScore: overall,
-        verdict,
-        weights: weights as any,
-        metrics: metrics as any,
-        competitors: competitors as any,
-        address: addressData as any,
+        overallScore: null,
+        verdict: null,
+        weights: { ...(dto.weights ?? DEFAULT_WEIGHTS) },
+        metrics: scoring.metrics,
+        footTrafficPeak: null,
+        footTrafficAvg: null,
+        competitors: {
+          create: competitorSearch.competitors.map((competitor) => ({
+            placeId: competitor.placeId,
+            name: competitor.name,
+            category: competitor.category,
+            latitude: competitor.coordinates.lat,
+            longitude: competitor.coordinates.lng,
+            distanceMeters: competitor.distanceMeters,
+            rating: competitor.rating,
+            reviewCount: competitor.reviewCount,
+            threatLevel: competitor.threatLevel,
+          })),
+        },
       },
+      include: { competitors: true },
     });
 
     return {
       id: saved.id,
       label: saved.label,
-      coordinates: dto.coordinates,
-      address: addressData,
-      businessType: dto.businessType,
-      radiusMeters: dto.radiusMeters,
-      weights,
-      overallScore: overall,
-      verdict,
-      metrics,
-      competitors,
-      footTrafficPeak: footPeak,
-      footTrafficAverage: footAvg,
+      coordinates: { lat: saved.latitude, lng: saved.longitude },
+      address: { formatted: location.formatted_address },
+      businessType: saved.businessType,
+      radiusMeters: saved.radiusMeters,
+      weights: saved.weights,
+      overallScore: saved.overallScore,
+      verdict: saved.verdict,
+      metrics: saved.metrics,
+      competitors: competitorSearch.competitors,
+      footTrafficPeak: saved.footTrafficPeak,
+      footTrafficAverage: saved.footTrafficAvg,
       createdAt: saved.createdAt,
     };
   }
 
-  async list(userId: string, page: number, pageSize: number) {
-    const offset = (page - 1) * pageSize;
-    const [items, total] = await Promise.all([
-      this.prisma.analysis.findMany({
-        where: { userId },
-        orderBy: { createdAt: "desc" },
-        skip: offset,
-        take: pageSize,
-      }),
-      this.prisma.analysis.count({ where: { userId } }),
-    ]);
-
-    return {
-      items: items.map((i) => ({
-        id: i.id,
-        label: i.label,
-        coordinates: { lat: i.latitude, lng: i.longitude },
-        businessType: i.businessType,
-        overallScore: i.overallScore,
-        verdict: i.verdict,
-        createdAt: i.createdAt,
-      })),
-      total,
-      page,
-      pageSize,
-    };
-  }
-
-  async remove(id: string, userId: string) {
-    await this.prisma.analysis.deleteMany({ where: { id, userId } });
-    return;
-  }
-
-  private component(components: any[], type: string): string | null {
-    const c = components?.find((x) => x.types?.includes(type));
-    return c?.long_name ?? null;
-  }
-
-  private hashCode(str: string): number {
-    let h = 0;
-    for (let i = 0; i < str.length; i++) {
-      h = (h << 5) - h + str.charCodeAt(i);
-      h |= 0;
-    }
-    return h;
+  async findAll(userId: string) {
+    const analyses = await this.prisma.analysis.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+    });
+    return analyses.map((analysis) => ({
+      ...analysis,
+      overallScore: null,
+      verdict: null,
+      metrics: [],
+      footTrafficPeak: null,
+      footTrafficAvg: null,
+    }));
   }
 }

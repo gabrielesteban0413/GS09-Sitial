@@ -1,0 +1,29 @@
+{
+  "expo": {
+    "name": "Sitial",
+    "slug": "sitial-mobile",
+    "scheme": "sitial",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/sitial-logo.png",
+    "userInterfaceStyle": "light",
+    "platforms": [
+      "ios",
+      "android"
+    ],
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#15383B",
+        "foregroundImage": "./assets/sitial-logo.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store"
+    ]
+  }
+}

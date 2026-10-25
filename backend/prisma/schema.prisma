@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  output   = "../generated/prisma"
 }
 
 datasource db {
@@ -10,34 +11,76 @@ datasource db {
 model User {
   id           String     @id @default(uuid())
   email        String     @unique
-  passwordHash String     @map("password_hash")
-  fullName     String     @map("full_name")
-  isActive     Boolean    @default(true) @map("is_active")
+  passwordHash String
+  fullName     String
+  isActive     Boolean    @default(true)
   analyses     Analysis[]
-  createdAt    DateTime   @default(now()) @map("created_at")
-  updatedAt    DateTime   @updatedAt @map("updated_at")
+  layers       Layer[]
+  createdAt    DateTime   @default(now())
+}
 
-  @@map("users")
+model Layer {
+  id          String     @id @default(uuid())
+  userId      String
+  name        String
+  description String?
+  color       String     @default("#3a9aa3")
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  locations   Location[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([userId])
+  @@map("layers")
+}
+
+model Location {
+  id        String   @id @default(uuid())
+  layerId   String
+  name      String
+  address   String?
+  category  String   @default("otro")
+  notes     String?
+  latitude  Float
+  longitude Float
+  layer     Layer    @relation(fields: [layerId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([layerId])
+  @@map("locations")
 }
 
 model Analysis {
-  id              String   @id @default(uuid())
-  userId          String   @map("user_id")
+  id              String       @id @default(uuid())
+  userId          String
   label           String?
   latitude        Float
   longitude       Float
-  businessType    String   @map("business_type")
-  radiusMeters    Int      @map("radius_meters")
-  overallScore    Int      @map("overall_score")
-  verdict         String
+  businessType    String
+  radiusMeters    Int
+  overallScore    Int?
+  verdict         String?
   weights         Json
   metrics         Json
-  competitors     Json
-  address         Json?
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
+  footTrafficPeak Int?
+  footTrafficAvg  Int?
+  competitors     Competitor[]
+  user            User         @relation(fields: [userId], references: [id])
+  createdAt       DateTime     @default(now())
+}
 
-  @@index([userId])
-  @@map("analyses")
+model Competitor {
+  id             String   @id @default(uuid())
+  analysisId     String
+  placeId        String
+  name           String
+  category       String
+  latitude       Float
+  longitude      Float
+  distanceMeters Float
+  rating         Float?
+  reviewCount    Int
+  threatLevel    String
+  analysis       Analysis @relation(fields: [analysisId], references: [id], onDelete: Cascade)
 }

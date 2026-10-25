@@ -1,36 +1,24 @@
-import { Body, Controller, Get, Post } from "@nestjs/common";
-import { ApiTags } from "@nestjs/swagger";
-import { AuthService } from "./auth.service";
-import { RegisterDto } from "./dto/register.dto";
-import { LoginDto } from "./dto/login.dto";
-import { Public } from "./decorators/public.decorator";
-import { CurrentUser } from "./decorators/current-user.decorator";
+import { Controller, Post, Body, Get, UseGuards, Req } from '@nestjs/common';
+import { AuthService } from './auth.service';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
-@ApiTags("auth")
-@Controller("auth")
+@Controller('auth')
 export class AuthController {
-  constructor(private auth: AuthService) {}
+  constructor(private readonly authService: AuthService) {}
 
-  @Public()
-  @Post("register")
-  register(@Body() dto: RegisterDto) {
-    return this.auth.register(dto);
+  @Post('register')
+  register(@Body() body: any) {
+    return this.authService.register(body);
   }
 
-  @Public()
-  @Post("login")
-  login(@Body() dto: LoginDto) {
-    return this.auth.login(dto);
+  @Post('login')
+  login(@Body() body: any) {
+    return this.authService.login(body);
   }
 
-  @Get("me")
-  me(@CurrentUser() user: any) {
-    return {
-      id: user.id,
-      email: user.email,
-      fullName: user.fullName,
-      isActive: user.isActive,
-      createdAt: user.createdAt,
-    };
+  @UseGuards(JwtAuthGuard)
+  @Get('me')
+  getProfile(@Req() req: any) {
+    return req.user;
   }
 }
