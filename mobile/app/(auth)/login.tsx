@@ -2,6 +2,7 @@ import { Link, router } from "expo-router";
 import { useState } from "react";
 import {
   ActivityIndicator,
+  ImageBackground,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -40,13 +41,19 @@ export default function LoginScreen() {
     <SafeAreaView style={styles.safe} edges={["top", "left", "right", "bottom"]}>
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === "ios" ? "padding" : undefined}>
         <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-          <View style={styles.visual}>
+          <ImageBackground
+            source={require("../../assets/auth-hero.jpg")}
+            style={styles.visual}
+            imageStyle={styles.visualImage}
+            resizeMode="cover"
+          >
+            <View style={styles.visualShade} />
             <View style={styles.grid} />
             <OrbitRing size={155} color="rgba(183,231,222,0.24)" style={styles.orbit} />
             <Text style={styles.coordinate}>04°39′ N  /  74°05′ O</Text>
             <Text style={styles.visualTitle}>Decide con{`\n`}el territorio.</Text>
             <Text style={styles.visualNote}>Inteligencia de ubicación para negocios reales.</Text>
-          </View>
+          </ImageBackground>
           <View style={styles.card}>
             <Text style={styles.kicker}>ACCESO A TU ESPACIO</Text>
             <Text style={styles.heading}>Bienvenido</Text>
@@ -101,7 +108,7 @@ const styles = StyleSheet.create({
   flex: { flex: 1 },
   scroll: { flexGrow: 1, justifyContent: "center", padding: 18 },
   visual: {
-    minHeight: 185,
+    minHeight: 225,
     overflow: "hidden",
     justifyContent: "flex-end",
     borderTopLeftRadius: 24,
@@ -109,6 +116,8 @@ const styles = StyleSheet.create({
     padding: 24,
     backgroundColor: colors.tealDeep,
   },
+  visualImage: { borderTopLeftRadius: 24, borderTopRightRadius: 24 },
+  visualShade: { ...StyleSheet.absoluteFill, backgroundColor: "rgba(12,48,55,0.61)" },
   grid: {
     position: "absolute",
     width: 310,
@@ -121,7 +130,7 @@ const styles = StyleSheet.create({
   },
   orbit: { top: -43, right: 31 },
   coordinate: { color: "#9ed3cc", fontSize: 9, fontWeight: "700", letterSpacing: 1.5, marginBottom: 12 },
-  visualTitle: { color: colors.white, fontSize: 29, fontWeight: "800", lineHeight: 31 },
+  visualTitle: { color: colors.white, fontSize: 33, fontWeight: "900", lineHeight: 35, letterSpacing: -0.6 },
   visualNote: { color: "#c3ddda", fontSize: 11, marginTop: 9 },
   card: {
     borderBottomLeftRadius: 24,
@@ -152,6 +161,11 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginTop: 21,
     backgroundColor: colors.tealDeep,
+    shadowColor: colors.tealDeep,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.22,
+    shadowRadius: 11,
+    elevation: 5,
   },
   pressed: { opacity: 0.84 },
   disabled: { opacity: 0.55 },

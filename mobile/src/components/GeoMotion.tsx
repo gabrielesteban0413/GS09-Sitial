@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type PropsWithChildren } from "react";
 import { Animated, StyleSheet, View, type StyleProp, type ViewStyle } from "react-native";
 
 export function PulseDot({ color, size = 6 }: { color: string; size?: number }) {
@@ -65,6 +65,33 @@ export function OrbitRing({
       <View style={[styles.node, { width: nodeSize, height: nodeSize, borderRadius: nodeSize / 2, backgroundColor: color }]} />
     </Animated.View>
   );
+}
+
+export function GeoDrift({
+  children,
+  duration = 3600,
+  distance = 7,
+  style,
+}: PropsWithChildren<{
+  duration?: number;
+  distance?: number;
+  style?: StyleProp<ViewStyle>;
+}>) {
+  const [progress] = useState(() => new Animated.Value(0));
+
+  useEffect(() => {
+    const drift = Animated.loop(
+      Animated.sequence([
+        Animated.timing(progress, { toValue: 1, duration, useNativeDriver: true }),
+        Animated.timing(progress, { toValue: 0, duration, useNativeDriver: true }),
+      ]),
+    );
+    drift.start();
+    return () => drift.stop();
+  }, [duration, progress]);
+
+  const translateY = progress.interpolate({ inputRange: [0, 1], outputRange: [distance, -distance] });
+  return <Animated.View style={[style, { transform: [{ translateY }] }]}>{children}</Animated.View>;
 }
 
 const styles = StyleSheet.create({
