@@ -2,6 +2,7 @@ import { Link, router } from "expo-router";
 import { useState } from "react";
 import {
   ActivityIndicator,
+  ImageBackground,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -41,11 +42,17 @@ export default function RegisterScreen() {
     <SafeAreaView style={styles.safe} edges={["top", "left", "right", "bottom"]}>
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === "ios" ? "padding" : undefined}>
         <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-          <View style={styles.visual}>
+          <ImageBackground
+            source={require("../../assets/analysis-bg.jpg")}
+            style={styles.visual}
+            imageStyle={styles.visualImage}
+            resizeMode="cover"
+          >
+            <View style={styles.visualShade} />
             <OrbitRing size={215} color="rgba(255,255,255,0.2)" style={styles.orbit} />
             <Text style={styles.coordinate}>COORDENADAS DE TU PRÓXIMO PROYECTO</Text>
             <Text style={styles.visualTitle}>El lugar{`\n`}lo cambia todo.</Text>
-          </View>
+          </ImageBackground>
           <View style={styles.card}>
             <Text style={styles.kicker}>NUEVA CUENTA</Text>
             <Text style={styles.heading}>Empieza con Sitial</Text>
@@ -86,7 +93,7 @@ const styles = StyleSheet.create({
   flex: { flex: 1 },
   scroll: { flexGrow: 1, justifyContent: "center", padding: 18 },
   visual: {
-    minHeight: 170,
+    minHeight: 210,
     overflow: "hidden",
     justifyContent: "flex-end",
     borderTopLeftRadius: 24,
@@ -94,9 +101,11 @@ const styles = StyleSheet.create({
     padding: 24,
     backgroundColor: colors.plum,
   },
+  visualImage: { borderTopLeftRadius: 24, borderTopRightRadius: 24 },
+  visualShade: { ...StyleSheet.absoluteFill, backgroundColor: "rgba(70,27,62,0.58)" },
   orbit: { right: -22, top: -106 },
   coordinate: { color: "#ead2e3", fontSize: 8, fontWeight: "700", letterSpacing: 1.4, marginBottom: 13 },
-  visualTitle: { color: colors.white, fontSize: 30, fontWeight: "800", lineHeight: 32 },
+  visualTitle: { color: colors.white, fontSize: 33, fontWeight: "900", lineHeight: 35, letterSpacing: -0.6 },
   card: {
     borderBottomLeftRadius: 24,
     borderBottomRightRadius: 24,
@@ -126,6 +135,11 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginTop: 20,
     backgroundColor: colors.plum,
+    shadowColor: colors.plum,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.22,
+    shadowRadius: 11,
+    elevation: 5,
   },
   pressed: { opacity: 0.84 },
   disabled: { opacity: 0.55 },

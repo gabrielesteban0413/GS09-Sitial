@@ -53,6 +53,8 @@ export const api = {
     login: (data: { email: string; password: string }) =>
       request<TokenResponse>("/auth/login", { method: "POST", body: data, auth: false }),
     me: () => request<User>("/auth/me"),
+    updateProfile: (data: { fullName?: string; currentPassword?: string; newPassword?: string }) =>
+      request<User>("/auth/me", { method: "PATCH", body: data }),
   },
   analysis: {
     create: (data: {

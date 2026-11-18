@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
+import { GeoAtmosphere } from "@/components/GeoAtmosphere";
 import "@/styles/auth.css";
 
 export function Login() {
@@ -17,14 +18,19 @@ export function Login() {
     }
 
     return (
-        <div className="auth-split">
+        <div className="auth-split auth-login">
+            <GeoAtmosphere variant="login" />
             <div className="auth-visual">
                 <div className="auth-visual-content">
                     <h1>Decide con datos,<br/>no con corazonadas.</h1>
                     <p>Miles de negocios en Latinoamérica ya eligen sus ubicaciones con Sitial.</p>
                 </div>
+                <div className="auth-coordinate-ribbon" aria-hidden="true">
+                    <span>LOCALIZACIÓN</span><span>04°39′ N</span><span>74°05′ O</span><span>BOG / CO</span>
+                </div>
             </div>
             <div className="auth-form-side">
+                <span className="auth-side-index" aria-hidden="true">SITIAL / ACCESO · 01</span>
                 <div className="auth-card">
                     <h1>Bienvenido de vuelta</h1>
                     <p className="subtitle">Accede a tu panel de análisis</p>

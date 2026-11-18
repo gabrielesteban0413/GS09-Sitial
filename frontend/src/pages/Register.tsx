@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
+import { GeoAtmosphere } from "@/components/GeoAtmosphere";
 import "@/styles/auth.css";
 
 export function Register() {
@@ -18,14 +19,19 @@ export function Register() {
     }
 
     return (
-        <div className="auth-split">
+        <div className="auth-split auth-register">
+            <GeoAtmosphere variant="register" />
             <div className="auth-visual">
                 <div className="auth-visual-content">
                     <h1>Empieza gratis<br/>en menos de 1 minuto.</h1>
-                    <p>Crea tu cuenta y accede a 3 análisis gratuitos al mes.</p>
+                    <p>Crea tu espacio y organiza las ubicaciones comerciales que estás evaluando.</p>
+                </div>
+                <div className="auth-coordinate-ribbon" aria-hidden="true">
+                    <span>NUEVO ESPACIO</span><span>04°39′ N</span><span>74°05′ O</span><span>BOG / CO</span>
                 </div>
             </div>
             <div className="auth-form-side">
+                <span className="auth-side-index" aria-hidden="true">SITIAL / REGISTRO · 02</span>
                 <div className="auth-card">
                     <h1>Crea tu cuenta</h1>
                     <p className="subtitle">Es gratis y toma menos de 1 minuto</p>

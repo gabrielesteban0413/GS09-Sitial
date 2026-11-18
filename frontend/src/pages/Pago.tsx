@@ -9,13 +9,13 @@ export function Pago() {
     const precio = plan === "starter" ? 49 : 199;
 
     return (
-        <div style={{ background: "var(--bg)", padding: "60px 0 100px", minHeight: "100vh" }}>
+        <div className="geo-public-page geo-payment-page">
             <div className="container">
                 <div style={{ textAlign: "center", marginBottom: 48 }}>
                     <h1 style={{ fontSize: 38, fontWeight: 800, marginBottom: 12 }}>Suscripción al plan {nombre}</h1>
                     <p style={{ color: "var(--text-3)" }}>Completa tus datos para activar tu cuenta.</p>
                 </div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 380px", gap: 32 }}>
+                <div className="payment-grid">
                     <div className="card" style={{ padding: 40 }}>
                         <h3 style={{ marginBottom: 20, borderBottom: "1px solid var(--border)", paddingBottom: 12 }}>1. Datos personales</h3>
                         <div className="form-group"><label className="form-label">Nombre completo</label><input className="form-input" placeholder="Ej: Juan Pérez" /></div>
