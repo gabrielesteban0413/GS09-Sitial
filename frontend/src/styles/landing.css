@@ -62,6 +62,7 @@
   right: -55px;
   width: 510px;
   height: 510px;
+  animation: landing-halo-rotate 46s linear infinite;
 }
 
 .landing-geo-halo-two {
@@ -71,6 +72,16 @@
   height: 570px;
   border-color: rgba(125, 56, 101, .12);
   box-shadow: 0 0 0 28px rgba(125, 56, 101, .025), 0 0 0 58px rgba(125, 56, 101, .02);
+  animation: landing-halo-breathe 7s ease-in-out infinite alternate;
+}
+
+@keyframes landing-halo-rotate {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes landing-halo-breathe {
+  from { transform: scale(.94); opacity: .5; }
+  to { transform: scale(1.08); opacity: 1; }
 }
 
 .landing-geo-plane {
@@ -112,15 +123,43 @@
 .landing-geo-route path {
   fill: none;
   stroke: url(#geo-route-gradient);
-  stroke-dasharray: 9 10;
+  stroke-dasharray: 3 12;
   stroke-linecap: round;
+  stroke-width: 3;
+  animation: landing-route-draw 7s linear infinite;
+}
+
+.landing-geo-route .landing-route-base {
+  stroke: rgba(35, 112, 119, .52);
+  stroke-dasharray: 3 7;
   stroke-width: 2;
-  animation: landing-route-draw 22s linear infinite;
+  animation-duration: 18s;
+}
+
+.landing-geo-route .landing-route-flow {
+  stroke: url(#geo-route-flow);
+  stroke-dasharray: 2 14;
+  stroke-width: 4;
+  filter: drop-shadow(0 0 5px rgba(66, 183, 193, .9));
+  animation-duration: 4.5s;
 }
 
 .landing-geo-route circle {
   fill: #fff;
   stroke: #3a9aa3;
+  stroke-width: 2;
+}
+
+.landing-geo-route .landing-route-traveler {
+  fill: #fff;
+  stroke: #2d7880;
+  stroke-width: 3;
+  filter: drop-shadow(0 0 7px rgba(45, 120, 128, .9));
+}
+
+.landing-geo-route .landing-route-traveler-secondary {
+  fill: #f8eafa;
+  stroke: #7d3865;
   stroke-width: 2;
 }
 
@@ -147,6 +186,7 @@
 }
 
 .landing-geo-pin {
+  position: relative;
   display: grid;
   width: 31px;
   height: 31px;
@@ -156,6 +196,47 @@
   background: linear-gradient(145deg, #52bcc6, #2d7880);
   box-shadow: 0 0 0 5px rgba(58, 154, 163, .13), 0 7px 20px rgba(10, 54, 60, .24);
   color: #fff;
+}
+
+.landing-geo-pin::after {
+  position: absolute;
+  inset: -6px;
+  transform: scale(.75);
+  border: 1px solid rgba(58, 154, 163, .58);
+  border-radius: 50%;
+  content: "";
+  animation: landing-pin-radar 2.4s ease-out infinite;
+}
+
+@keyframes landing-pin-radar {
+  0% { transform: scale(.75); opacity: .95; }
+  100% { transform: scale(1.75); opacity: 0; }
+}
+
+.landing-geo-sweep {
+  position: absolute;
+  z-index: 1;
+  width: 28%;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, transparent, rgba(73, 194, 201, .95), transparent);
+  box-shadow: 0 0 12px rgba(73, 194, 201, .8);
+  animation: landing-sweep 6s ease-in-out infinite;
+}
+
+.landing-geo-sweep-one { top: 33%; left: 8%; transform: rotate(-24deg); }
+.landing-geo-sweep-two {
+  right: 7%;
+  bottom: 31%;
+  width: 23%;
+  background: linear-gradient(90deg, transparent, rgba(157, 91, 143, .9), transparent);
+  box-shadow: 0 0 12px rgba(157, 91, 143, .65);
+  animation-delay: -3s;
+}
+
+@keyframes landing-sweep {
+  0%, 100% { opacity: .18; translate: -12px 0; }
+  50% { opacity: .95; translate: 15px 0; }
 }
 
 .landing-geo-point-three .landing-geo-pin {
@@ -192,6 +273,17 @@
 
 .landing-geo-coordinate-one { top: 17%; left: 8%; }
 .landing-geo-coordinate-two { top: 27%; right: 8%; }
+.landing-geo-coordinate-three {
+  right: 9%;
+  bottom: 17%;
+  color: rgba(125, 56, 101, .72);
+  animation: landing-coordinate-blink 3.5s ease-in-out infinite;
+}
+
+@keyframes landing-coordinate-blink {
+  0%, 100% { opacity: .45; transform: translateY(0); }
+  50% { opacity: 1; transform: translateY(-5px); }
+}
 
 .landing-hero-content {
   position: relative;
@@ -378,6 +470,7 @@
   border-radius: 50%;
   background: radial-gradient(circle, rgba(82, 188, 198, .13), transparent 66%);
   box-shadow: 0 0 0 35px rgba(58, 154, 163, .025), 0 0 0 70px rgba(58, 154, 163, .02);
+  animation: landing-orbit-breathe 10s ease-in-out infinite alternate;
 }
 
 .landing-intro::after {
@@ -470,6 +563,7 @@
   border-radius: 50%;
   background: var(--teal-400);
   box-shadow: 0 0 0 4px rgba(255, 255, 255, .2);
+  animation: landing-status-pulse 2.4s ease-in-out infinite;
 }
 
 .landing-intro-copy h2,
@@ -542,6 +636,7 @@
   height: 100%;
   background: repeating-linear-gradient(135deg, transparent 0 35px, rgba(45, 120, 128, .035) 36px 37px);
   mask-image: linear-gradient(90deg, transparent, #000);
+  animation: landing-grid-drift 22s linear infinite;
 }
 
 .landing-features > .landing-container {
@@ -576,7 +671,11 @@
   box-shadow: 0 8px 24px rgba(21, 63, 68, .035);
   transition: transform .24s, border-color .24s, box-shadow .24s;
   backdrop-filter: blur(8px);
+  animation: landing-card-float 7s ease-in-out infinite;
 }
+
+.landing-feature-card:nth-child(2) { animation-delay: -2.2s; }
+.landing-feature-card:nth-child(3) { animation-delay: -4.4s; }
 
 .landing-feature-card::before {
   position: absolute;
@@ -629,6 +728,7 @@
   background: linear-gradient(145deg, #e8f6f6, #d8eeee);
   color: var(--teal-700);
   box-shadow: inset 0 0 0 1px rgba(58, 154, 163, .1), 0 5px 12px rgba(58, 154, 163, .08);
+  animation: landing-icon-glow 4s ease-in-out infinite;
 }
 
 .landing-feature-number {
@@ -659,6 +759,7 @@
   border: 1px solid rgba(45, 120, 128, .11);
   border-radius: 50%;
   box-shadow: 0 0 0 24px rgba(58, 154, 163, .025), 0 0 0 48px rgba(58, 154, 163, .02);
+  animation: landing-category-orbit 34s linear infinite;
 }
 
 .landing-categories-inner {
@@ -698,7 +799,11 @@
   font-weight: 600;
   box-shadow: 0 4px 12px rgba(10, 45, 52, .035);
   transition: transform .18s, border-color .18s, box-shadow .18s, color .18s;
+  animation: landing-chip-drift 5.5s ease-in-out infinite;
 }
+
+.landing-category-list span:nth-child(2n) { animation-delay: -2.7s; }
+.landing-category-list span:nth-child(3n) { animation-delay: -4.1s; }
 
 .landing-category-list span::before {
   width: 6px;
@@ -743,6 +848,7 @@
     repeating-linear-gradient(0deg, transparent 0 49px, rgba(140, 213, 216, .055) 50px 51px),
     repeating-linear-gradient(90deg, transparent 0 49px, rgba(140, 213, 216, .055) 50px 51px);
   mask-image: radial-gradient(ellipse at 50% 52%, #000, transparent 76%);
+  animation: landing-grid-drift 30s linear infinite;
 }
 
 .landing-workflow > .landing-container {
@@ -794,6 +900,7 @@
   background: var(--teal-400);
   box-shadow: 0 0 12px rgba(82, 188, 198, .75);
   content: "";
+  animation: landing-status-pulse 2.1s ease-in-out infinite;
 }
 
 .landing-step-rule {
@@ -822,6 +929,7 @@
   border: 1px solid rgba(45, 120, 128, .1);
   border-radius: 50%;
   box-shadow: 0 0 0 28px rgba(58, 154, 163, .025), 0 0 0 56px rgba(58, 154, 163, .02);
+  animation: landing-orbit-breathe 12s ease-in-out infinite alternate-reverse;
 }
 
 .landing-data-inner {
@@ -849,6 +957,7 @@
   background: linear-gradient(145deg, #e4f5f5, #d7eeee);
   box-shadow: 0 7px 18px rgba(58, 154, 163, .1);
   color: var(--teal-700);
+  animation: landing-marker-float 4s ease-in-out infinite;
 }
 
 .landing-data h2 { margin: 5px 0; font-size: 22px; }
@@ -865,6 +974,11 @@
 
 .landing-cta::before {
   inset: 0;
+  background-size: 150% 150%;
+  animation: landing-glow-shift 16s ease-in-out infinite alternate;
+}
+
+.landing-cta::before {
   background:
     radial-gradient(ellipse at 14% 50%, rgba(82, 188, 198, .27), transparent 37%),
     radial-gradient(ellipse at 90% 20%, rgba(151, 91, 143, .25), transparent 36%);
@@ -919,6 +1033,51 @@
   background: linear-gradient(135deg, #fff, #d4eeee);
   box-shadow: 0 12px 28px rgba(0, 0, 0, .2);
   color: var(--teal-800);
+}
+
+@keyframes landing-orbit-breathe {
+  from { transform: scale(.94); opacity: .58; }
+  to { transform: scale(1.06); opacity: 1; }
+}
+
+@keyframes landing-status-pulse {
+  0%, 100% { box-shadow: 0 0 0 3px rgba(58, 154, 163, .13), 0 0 0 0 rgba(58, 154, 163, .22); }
+  50% { box-shadow: 0 0 0 5px rgba(58, 154, 163, .06), 0 0 0 7px rgba(58, 154, 163, 0); }
+}
+
+@keyframes landing-grid-drift {
+  from { background-position: 0 0; }
+  to { background-position: 70px 70px; }
+}
+
+@keyframes landing-card-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+@keyframes landing-icon-glow {
+  0%, 100% { box-shadow: inset 0 0 0 1px rgba(58, 154, 163, .1), 0 5px 12px rgba(58, 154, 163, .08); }
+  50% { box-shadow: inset 0 0 0 1px rgba(58, 154, 163, .2), 0 7px 20px rgba(58, 154, 163, .2); }
+}
+
+@keyframes landing-category-orbit {
+  from { transform: translateY(-50%) rotate(0deg); }
+  to { transform: translateY(-50%) rotate(360deg); }
+}
+
+@keyframes landing-chip-drift {
+  0%, 100% { translate: 0 0; }
+  50% { translate: 0 -3px; }
+}
+
+@keyframes landing-marker-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+@keyframes landing-glow-shift {
+  from { background-position: 0% 50%; }
+  to { background-position: 100% 50%; }
 }
 
 .site-brand .brand-mark {
@@ -1026,8 +1185,25 @@
   .landing-hero-content,
   .landing-intro-image img,
   .landing-geo-plane,
+  .landing-geo-halo,
   .landing-geo-route path,
-  .landing-geo-point { animation: none; }
+  .landing-geo-point,
+  .landing-geo-sweep,
+  .landing-geo-coordinate-three,
+  .landing-geo-pin::after,
+  .landing-intro::before,
+  .landing-caption-dot,
+  .landing-features::before,
+  .landing-feature-card,
+  .landing-feature-icon,
+  .landing-categories::before,
+  .landing-category-list span,
+  .landing-workflow::after,
+  .landing-step-number::after,
+  .landing-data::before,
+  .landing-data-mark,
+  .landing-cta::before { animation: none; }
+  .landing-geo-route .landing-route-traveler { display: none; }
   .landing *,
   .landing *::before,
   .landing *::after {

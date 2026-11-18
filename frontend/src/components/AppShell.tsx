@@ -1,10 +1,11 @@
 import type { ReactNode } from "react";
-import { BarChart2, Home, Layers, LogOut, MapPin } from "lucide-react";
+import { BarChart2, Home, Layers, LogOut, MapPin, UserRound } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { GeoAtmosphere } from "@/components/GeoAtmosphere";
 import "@/styles/dashboard.css";
 
-type AppSection = "home" | "analysis" | "layers" | "documentation";
+type AppSection = "home" | "analysis" | "layers" | "documentation" | "profile";
 
 interface AppShellProps {
   active: AppSection;
@@ -20,6 +21,7 @@ const NAV_ITEMS: { section: AppSection; path: string; label: string; Icon: typeo
   { section: "home", path: "/app", label: "Inicio", Icon: Home },
   { section: "analysis", path: "/app/analisis", label: "Análisis", Icon: BarChart2 },
   { section: "layers", path: "/app/capas", label: "Capas", Icon: Layers },
+  { section: "profile", path: "/app/perfil", label: "Perfil", Icon: UserRound },
 ];
 
 export function AppShell({
@@ -35,6 +37,7 @@ export function AppShell({
 
   return (
     <div className="app">
+      <GeoAtmosphere variant="app" />
       <aside className="nav" aria-label="Principal">
         <Link to="/app" className="nav-brand" aria-label="Sitial, inicio">
           <MapPin size={23} fill="currentColor" />
@@ -67,6 +70,7 @@ export function AppShell({
         <div className="header-context">
           <div className="name">{title}</div>
           <div className="meta">{subtitle}</div>
+          <div className="header-coordinate">GEO GRID · 04°39′ N / 74°05′ O</div>
         </div>
         <div className="header-spacer" />
         {score !== undefined && (

@@ -15,6 +15,7 @@ import { Dashboard } from "./pages/Dashboard";
 import { Analysis } from "./pages/Analysis";
 import { Layers } from "./pages/Layers";
 import { Documentation } from "./pages/Documentation";
+import { Profile } from "./pages/Profile";
 import "./styles/public.css";
 
 function PrivateLayout() {
@@ -48,6 +49,7 @@ export function App() {
                         <Route path="analysis" element={<Navigate to="/app/analisis" replace />} />
                         <Route path="capas" element={<Layers />} />
                         <Route path="documentacion" element={<Documentation />} />
+                        <Route path="perfil" element={<Profile />} />
                     </Route>
                     <Route path="/analisis" element={<Navigate to="/app/analisis" replace />} />
                     <Route path="/analysis" element={<Navigate to="/app/analisis" replace />} />

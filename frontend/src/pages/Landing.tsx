@@ -53,13 +53,28 @@ export function Landing() {
                                 <stop offset="50%" stopColor="#2d7880" stopOpacity=".8" />
                                 <stop offset="100%" stopColor="#7d3865" stopOpacity=".15" />
                             </linearGradient>
+                            <linearGradient id="geo-route-flow" x1="0" y1="0" x2="1" y2="0">
+                                <stop offset="0%" stopColor="#42b7c1" stopOpacity="0" />
+                                <stop offset="48%" stopColor="#42b7c1" stopOpacity="1" />
+                                <stop offset="100%" stopColor="#9a5c8c" stopOpacity=".9" />
+                            </linearGradient>
                         </defs>
-                        <path d="M80 345 C240 305 220 180 390 220 S590 325 680 185 830 120 950 65" />
+                        <path className="landing-route-base" d="M80 345 C240 305 220 180 390 220 S590 325 680 185 830 120 950 65" />
+                        <path className="landing-route-flow" d="M80 345 C240 305 220 180 390 220 S590 325 680 185 830 120 950 65" />
+                        <circle className="landing-route-traveler" r="7">
+                            <animateMotion dur="8s" repeatCount="indefinite" path="M80 345 C240 305 220 180 390 220 S590 325 680 185 830 120 950 65" />
+                        </circle>
+                        <circle className="landing-route-traveler landing-route-traveler-secondary" r="5">
+                            <animateMotion dur="11s" begin="-5s" repeatCount="indefinite" path="M80 345 C240 305 220 180 390 220 S590 325 680 185 830 120 950 65" />
+                        </circle>
                         <circle cx="80" cy="345" r="5" />
                         <circle cx="390" cy="220" r="5" />
                         <circle cx="680" cy="185" r="5" />
                         <circle cx="950" cy="65" r="5" />
                     </svg>
+                        <span className="landing-geo-sweep landing-geo-sweep-one" />
+                        <span className="landing-geo-sweep landing-geo-sweep-two" />
+                        <span className="landing-geo-coordinate landing-geo-coordinate-three">RADIO DE EXPLORACIÓN / 800 M</span>
                     <div className="landing-geo-point landing-geo-point-one">
                         <span className="landing-geo-pin"><MapPin size={15} /></span>
                         <span className="landing-geo-label">Zona comercial <b>01</b></span>
