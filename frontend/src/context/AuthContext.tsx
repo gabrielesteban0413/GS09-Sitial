@@ -7,7 +7,12 @@ interface AuthValue {
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, name: string) => Promise<void>;
-  updateProfile: (data: { fullName?: string; currentPassword?: string; newPassword?: string }) => Promise<void>;
+  updateProfile: (data: {
+    fullName?: string;
+    avatarUrl?: string | null;
+    currentPassword?: string;
+    newPassword?: string;
+  }) => Promise<void>;
   logout: () => void;
 }
 
@@ -37,6 +42,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const updateProfile = useCallback(async (data: {
     fullName?: string;
+    avatarUrl?: string | null;
     currentPassword?: string;
     newPassword?: string;
   }) => {

@@ -17,6 +17,7 @@ interface AuthContextValue {
   register: (email: string, password: string, fullName: string) => Promise<void>;
   updateUser: (data: {
     fullName?: string;
+    avatarUrl?: string | null;
     currentPassword?: string;
     newPassword?: string;
   }) => Promise<void>;
@@ -71,6 +72,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
   const updateUser = useCallback(async (data: {
     fullName?: string;
+    avatarUrl?: string | null;
     currentPassword?: string;
     newPassword?: string;
   }) => {

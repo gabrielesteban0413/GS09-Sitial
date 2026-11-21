@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  AppState,
   ActivityIndicator,
   Pressable,
   Platform,
@@ -9,13 +10,19 @@ import {
   TextInput,
   View,
 } from "react-native";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import { useFocusEffect } from "expo-router";
+import { Accelerometer } from "expo-sensors";
 import MapView, { Circle, Marker, PROVIDER_GOOGLE, type Region } from "react-native-maps";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { BrandHeader } from "../../../src/components/BrandHeader";
-import { PulseDot } from "../../../src/components/GeoMotion";
-import { useWorkspace } from "../../../src/context/WorkspaceContext";
-import { api, type Competitor, type Coordinates, type LocationPin } from "../../../src/lib/api";
-import { businessTypes, colors, type BusinessType } from "../../../src/theme";
+import { AnalysisProgress } from "../../src/components/AnalysisProgress";
+import { BouncePressable } from "../../src/components/BouncePressable";
+import { BrandHeader } from "../../src/components/BrandHeader";
+import { PulseDot } from "../../src/components/GeoMotion";
+import { MapActionGesture } from "../../src/components/MapActionGesture";
+import { useWorkspace } from "../../src/context/WorkspaceContext";
+import { api, type Competitor, type Coordinates, type LocationPin } from "../../src/lib/api";
+import { businessTypes, colors, type BusinessType } from "../../src/theme";
 
 const INITIAL_COORDINATES: Coordinates = { lat: 4.6768, lng: -74.0483 };
 const INFLUENCE_RADII = [300, 500, 800, 1200] as const;
@@ -71,6 +78,7 @@ export default function MapScreen() {
   const [searchBusy, setSearchBusy] = useState(false);
   const [analysisBusy, setAnalysisBusy] = useState(false);
   const [saveBusy, setSaveBusy] = useState(false);
+  const [shakeToCenter, setShakeToCenter] = useState(false);
   const [error, setError] = useState("");
   const [pinError, setPinError] = useState("");
 
@@ -78,6 +86,69 @@ export default function MapScreen() {
     () => layers.find((layer) => layer.id === activeLayerId) ?? null,
     [layers, activeLayerId],
   );
+
+  const toggleShakeToCenter = useCallback(async () => {
+    if (shakeToCenter) {
+      setShakeToCenter(false);
+      return;
+    }
+
+    setError("");
+    try {
+      if (!await Accelerometer.isAvailableAsync()) {
+        setError("El sensor de movimiento no está disponible en este dispositivo.");
+        return;
+      }
+      const permission = await Accelerometer.requestPermissionsAsync();
+      if (!permission.granted) {
+        setError("No se concedió permiso para usar el sensor de movimiento.");
+        return;
+      }
+      setShakeToCenter(true);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "No se pudo activar el sensor de movimiento.");
+    }
+  }, [shakeToCenter]);
+
+  useFocusEffect(useCallback(() => {
+    if (!shakeToCenter) return undefined;
+
+    let lastRecenter = 0;
+    let sensorSubscription: ReturnType<typeof Accelerometer.addListener> | null = null;
+    const subscribeToSensor = () => {
+      if (sensorSubscription) return;
+      Accelerometer.setUpdateInterval(180);
+      sensorSubscription = Accelerometer.addListener(({ x, y, z }) => {
+        const magnitude = Math.sqrt(x * x + y * y + z * z);
+        const now = Date.now();
+        if (Math.abs(magnitude - 1) < 0.85 || now - lastRecenter < 2200) return;
+
+        lastRecenter = now;
+        const target = coordinates ?? INITIAL_COORDINATES;
+        mapRef.current?.animateToRegion({
+          latitude: target.lat,
+          longitude: target.lng,
+          latitudeDelta: 0.012,
+          longitudeDelta: 0.012,
+        }, 500);
+      });
+    };
+    const appStateSubscription = AppState.addEventListener("change", (nextState) => {
+      if (nextState === "active") {
+        subscribeToSensor();
+      } else {
+        sensorSubscription?.remove();
+        sensorSubscription = null;
+      }
+    });
+
+    if (AppState.currentState === "active") subscribeToSensor();
+
+    return () => {
+      appStateSubscription.remove();
+      sensorSubscription?.remove();
+    };
+  }, [coordinates, shakeToCenter]));
 
   useEffect(() => {
     if (!activeLayerId) return;
@@ -327,6 +398,10 @@ export default function MapScreen() {
             lat: event.nativeEvent.coordinate.latitude,
             lng: event.nativeEvent.coordinate.longitude,
           })}
+          scrollEnabled
+          zoomEnabled
+          rotateEnabled
+          pitchEnabled
           showsCompass
           showsScale
           toolbarEnabled={false}
@@ -370,6 +445,26 @@ export default function MapScreen() {
         <View pointerEvents="none" style={styles.mapCoordinates}>
           <PulseDot color={colors.teal} size={3} />
           <Text style={styles.mapCoordinatesText}>BOGOTÁ D.C. · 04°39′ N / 74°05′ O</Text>
+        </View>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={shakeToCenter ? "Desactivar recentrado al agitar" : "Activar recentrado al agitar"}
+          accessibilityState={{ checked: shakeToCenter }}
+          onPress={() => void toggleShakeToCenter()}
+          style={({ pressed }) => [styles.shakeButton, shakeToCenter && styles.shakeButtonActive, pressed && styles.pressed]}
+        >
+          <Ionicons
+            name={shakeToCenter ? "phone-portrait" : "phone-portrait-outline"}
+            size={13}
+            color={shakeToCenter ? colors.tealDeep : colors.inkSoft}
+          />
+          <Text style={[styles.shakeButtonText, shakeToCenter && styles.shakeButtonTextActive]}>
+            {shakeToCenter ? "Agitar activado" : "Agitar para recentrar"}
+          </Text>
+        </Pressable>
+        <View pointerEvents="none" style={styles.gestureHint}>
+          <Ionicons name="hand-left-outline" size={11} color={colors.tealDeep} />
+          <Text style={styles.gestureHintText}>Pellizca, desplaza y gira el mapa</Text>
         </View>
         {coordinates ? (
           <View pointerEvents="none" style={styles.mapLegend}>
@@ -418,6 +513,11 @@ export default function MapScreen() {
             <Text style={styles.coordinateLine}>
               {address ? `${address}  ·  ` : ""}{coordinatesLabel(coordinates)}  ·  Radio {radiusMeters} m
             </Text>
+            <MapActionGesture
+              enabled={!analysisBusy && !saveBusy}
+              onAnalyze={() => void analyzeLocation()}
+              onSave={() => void saveLocation()}
+            />
           </>
         ) : (
           <Text style={styles.layerHint}>Toca el mapa o busca una dirección para elegir un sitio.</Text>
@@ -425,21 +525,24 @@ export default function MapScreen() {
         {error ? <Text style={styles.error} accessibilityRole="alert">{error}</Text> : null}
         {pinError ? <Text style={styles.error} accessibilityRole="alert">{pinError}</Text> : null}
         <View style={styles.actionRow}>
-          <Pressable
-            style={({ pressed }) => [styles.secondaryButton, pressed && styles.pressed, (!coordinates || !activeLayer || saveBusy) && styles.disabled]}
+          <BouncePressable
+            accessibilityRole="button"
+            style={[styles.secondaryButton, (!coordinates || !activeLayer || saveBusy) && styles.disabled]}
             onPress={() => void saveLocation()}
             disabled={!coordinates || !activeLayer || saveBusy}
           >
             {saveBusy ? <ActivityIndicator color={colors.tealDeep} size="small" /> : <Text style={styles.secondaryText}>＋ Guardar</Text>}
-          </Pressable>
-          <Pressable
-            style={({ pressed }) => [styles.primaryButton, pressed && styles.pressed, (!coordinates || analysisBusy) && styles.disabled]}
+          </BouncePressable>
+          <BouncePressable
+            accessibilityRole="button"
+            style={[styles.primaryButton, (!coordinates || analysisBusy) && styles.disabled]}
             onPress={() => void analyzeLocation()}
             disabled={!coordinates || analysisBusy}
           >
-            {analysisBusy ? <ActivityIndicator color={colors.white} size="small" /> : <Text style={styles.primaryText}>Analizar ubicación</Text>}
-          </Pressable>
+            <Text style={styles.primaryText}>{analysisBusy ? "Analizando…" : "Analizar ubicación"}</Text>
+          </BouncePressable>
         </View>
+        {analysisBusy ? <AnalysisProgress /> : null}
         {analysis ? (
           <View style={styles.analysisSummary}>
             <Text style={styles.summaryTitle}>{analysis.competitors.length} competidores consultados</Text>
@@ -557,6 +660,36 @@ const styles = StyleSheet.create({
   mapWrap: { flex: 1, minHeight: 190, overflow: "hidden", backgroundColor: "#dfe9e6" },
   mapCoordinates: { position: "absolute", top: 11, left: 11, flexDirection: "row", alignItems: "center", gap: 5, borderRadius: 7, paddingHorizontal: 9, paddingVertical: 6, backgroundColor: "rgba(255,255,255,0.9)" },
   mapCoordinatesText: { color: colors.tealDeep, fontSize: 7, fontWeight: "800", letterSpacing: 0.8 },
+  shakeButton: {
+    position: "absolute",
+    left: 10,
+    bottom: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    minHeight: 31,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 10,
+    paddingHorizontal: 9,
+    backgroundColor: "rgba(255,255,255,0.96)",
+  },
+  shakeButtonActive: { borderColor: "#8cc9c2", backgroundColor: colors.mint },
+  shakeButtonText: { color: colors.inkSoft, fontSize: 8, fontWeight: "800" },
+  shakeButtonTextActive: { color: colors.tealDeep },
+  gestureHint: {
+    position: "absolute",
+    top: 48,
+    left: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    backgroundColor: "rgba(255,255,255,0.92)",
+  },
+  gestureHintText: { color: colors.tealDeep, fontSize: 7, fontWeight: "800" },
   mapLegend: {
     position: "absolute", right: 9, bottom: 9, gap: 5, borderWidth: 1, borderColor: "rgba(220,232,230,0.9)",
     borderRadius: 10, paddingHorizontal: 9, paddingVertical: 7, backgroundColor: "rgba(255,255,255,0.94)",

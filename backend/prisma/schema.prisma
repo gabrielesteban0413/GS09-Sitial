@@ -13,6 +13,7 @@ model User {
   email        String     @unique
   passwordHash String
   fullName     String
+  avatarUrl    String?    @db.Text
   isActive     Boolean    @default(true)
   analyses     Analysis[]
   layers       Layer[]

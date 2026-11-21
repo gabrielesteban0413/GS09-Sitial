@@ -1,6 +1,7 @@
-import { useState, type FormEvent } from "react";
+import { useRef, useState, type ChangeEvent, type FormEvent } from "react";
 import {
   BadgeCheck,
+  Camera,
   CreditCard,
   KeyRound,
   Mail,
@@ -23,6 +24,52 @@ export function Profile() {
   const [notice, setNotice] = useState("");
   const [savingName, setSavingName] = useState(false);
   const [savingPassword, setSavingPassword] = useState(false);
+  const [savingPhoto, setSavingPhoto] = useState(false);
+  const photoInputRef = useRef<HTMLInputElement>(null);
+
+  async function handlePhotoChange(event: ChangeEvent<HTMLInputElement>) {
+    const input = event.currentTarget;
+    const file = input.files?.[0];
+    input.value = "";
+    if (!file) return;
+
+    setError("");
+    setNotice("");
+    setSavingPhoto(true);
+    try {
+      if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+        throw new Error("Selecciona una imagen JPEG, PNG o WebP.");
+      }
+      if (file.size > 10 * 1024 * 1024) {
+        throw new Error("La imagen original no puede superar 10 MB.");
+      }
+
+      const objectUrl = URL.createObjectURL(file);
+      let avatarUrl: string;
+      try {
+        const image = new Image();
+        image.src = objectUrl;
+        await image.decode();
+        const scale = Math.min(1, 512 / Math.max(image.naturalWidth, image.naturalHeight));
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
+        canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+        const context = canvas.getContext("2d");
+        if (!context) throw new Error("No se pudo preparar la imagen seleccionada.");
+        context.drawImage(image, 0, 0, canvas.width, canvas.height);
+        avatarUrl = canvas.toDataURL("image/jpeg", 0.82);
+      } finally {
+        URL.revokeObjectURL(objectUrl);
+      }
+
+      await updateProfile({ avatarUrl });
+      setNotice("Tu foto de perfil se actualizó correctamente.");
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "No se pudo actualizar la foto de perfil.");
+    } finally {
+      setSavingPhoto(false);
+    }
+  }
 
   async function saveName(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -80,7 +127,29 @@ export function Profile() {
           )}
 
           <section className="profile-overview">
-            <div className="profile-avatar"><UserRound size={29} /></div>
+            <div className="profile-avatar-column">
+              <div className="profile-avatar">
+                {user?.avatarUrl
+                  ? <img src={user.avatarUrl} alt={`Foto de ${user.fullName}`} />
+                  : <UserRound size={29} />}
+              </div>
+              <input
+                ref={photoInputRef}
+                className="profile-photo-input"
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={(event) => void handlePhotoChange(event)}
+                aria-label="Seleccionar foto de perfil"
+              />
+              <button
+                type="button"
+                className="profile-photo-button"
+                onClick={() => photoInputRef.current?.click()}
+                disabled={savingPhoto}
+              >
+                <Camera size={13} /> {savingPhoto ? "Guardando…" : "Cambiar foto"}
+              </button>
+            </div>
             <div className="profile-overview-copy">
               <span>PERFIL ACTIVO</span>
               <h2>{user?.fullName ?? "Usuario Sitial"}</h2>

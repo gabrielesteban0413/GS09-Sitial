@@ -1,0 +1,62 @@
+classDiagram
+    direction TB
+    class Usuario {
+        +Long idUsuario
+        +String email
+        +String password
+        +String fullName
+        +Boolean isActive
+    }
+    class Analisis {
+        +Long idAnalisis
+        +String label
+        +Double latitude
+        +Double longitude
+        +String businessType
+        +Integer overallScore
+        +String verdict
+        +String metrics
+    }
+    class Capa {
+        +Long idCapa
+        +String nombre
+        +String descripcion
+        +String color
+    }
+    class Ubicacion {
+        +Long idUbicacion
+        +String nombre
+        +String direccion
+        +Double latitude
+        +Double longitude
+        +String categoria
+    }
+    class Competidor {
+        +Long idCompetidor
+        +String nombre
+        +Double rating
+        +Integer reviewCount
+        +String threatLevel
+    }
+    class GenericDAO {
+        +guardar(entity)
+        +buscarPorId(id)
+        +listarTodos()
+        +eliminar(entity)
+    }
+    class UsuarioDAO
+    class AnalisisDAO
+    class CapaDAO
+    class UbicacionDAO
+    class GoogleMapsService {
+        +buscarCercanos()
+    }
+
+    GenericDAO <|-- UsuarioDAO
+    GenericDAO <|-- AnalisisDAO
+    GenericDAO <|-- CapaDAO
+    GenericDAO <|-- UbicacionDAO
+    Usuario "1" --> "*" Analisis : posee
+    Usuario "1" --> "*" Capa : crea
+    Capa "1" --> "*" Ubicacion : contiene
+    Analisis "1" --> "*" Competidor : detecta

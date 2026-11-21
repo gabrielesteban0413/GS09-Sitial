@@ -1,0 +1,12 @@
+flowchart TB
+    U((Usuario autenticado))
+    U --> A[Registrarse]
+    U --> B[Iniciar sesión]
+    U --> C[Seleccionar ubicación]
+    C --> D[Consultar competidores]
+    C --> E[Visualizar afluencia]
+    C --> F[Generar score]
+    F --> G[Guardar análisis]
+    U --> H[Crear capa]
+    H --> I[Agregar ubicaciones]
+    U --> J[Consultar historial]

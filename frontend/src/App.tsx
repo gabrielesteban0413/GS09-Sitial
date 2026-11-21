@@ -39,10 +39,10 @@ export function App() {
                         <Route path="/terminos" element={<Terminos />} />
                         <Route path="/cookies" element={<Cookies />} />
                     </Route>
-                    
+
                     <Route path="/login" element={<Login />} />
                     <Route path="/register" element={<Register />} />
-                    
+
                     <Route path="/app" element={<PrivateLayout />}>
                         <Route index element={<Dashboard />} />
                         <Route path="analisis" element={<Analysis />} />
