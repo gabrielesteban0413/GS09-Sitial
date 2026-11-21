@@ -52,7 +52,7 @@ export default function IndexScreen() {
       </View>
     );
   }
-  if (user) return <Redirect href="/(app)/(tabs)" />;
+  if (user) return <Redirect href="/(app)" />;
   return (
     <SafeAreaView style={styles.safe} edges={["top", "left", "right"]}>
       <ScrollView contentContainerStyle={styles.content}>

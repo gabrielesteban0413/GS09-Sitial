@@ -22,6 +22,7 @@ export interface User {
   id: string;
   email: string;
   fullName: string;
+  avatarUrl: string | null;
   isActive: boolean;
   createdAt: string;
 }
@@ -178,6 +179,7 @@ export const api = {
     me: () => request<User>("/auth/me"),
     updateProfile: (data: {
       fullName?: string;
+      avatarUrl?: string | null;
       currentPassword?: string;
       newPassword?: string;
     }) => request<User>("/auth/me", { method: "PATCH", body: data }),

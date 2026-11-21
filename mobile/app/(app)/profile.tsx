@@ -1,6 +1,7 @@
 import { useState } from "react";
 import {
   Alert,
+  Image,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -8,10 +9,12 @@ import {
   TextInput,
   View,
 } from "react-native";
+import * as ImageManipulator from "expo-image-manipulator";
+import * as ImagePicker from "expo-image-picker";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { BrandHeader } from "../../../src/components/BrandHeader";
-import { useAuth } from "../../../src/context/AuthContext";
-import { colors } from "../../../src/theme";
+import { BrandHeader } from "../../src/components/BrandHeader";
+import { useAuth } from "../../src/context/AuthContext";
+import { colors } from "../../src/theme";
 
 export default function ProfileScreen() {
   const { user, updateUser, logout } = useAuth();
@@ -19,7 +22,53 @@ export default function ProfileScreen() {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [busy, setBusy] = useState(false);
+  const [photoBusy, setPhotoBusy] = useState(false);
   const [error, setError] = useState("");
+
+  async function changePhoto() {
+    setError("");
+    setPhotoBusy(true);
+    try {
+      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permission.granted) {
+        setError("Permite el acceso a la galería para elegir una foto de perfil.");
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ["images"],
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.82,
+      });
+      if (result.canceled) return;
+
+      const asset = result.assets[0];
+      const resizedImage = await ImageManipulator.ImageManipulator
+        .manipulate(asset.uri, { maxWidth: 512, maxHeight: 512 })
+        .renderAsync();
+      const optimized = await resizedImage.saveAsync({
+        compress: 0.82,
+        format: ImageManipulator.SaveFormat.JPEG,
+        base64: true,
+      });
+      if (!optimized.base64) {
+        setError("No se pudo leer la imagen seleccionada. Elige otra foto.");
+        return;
+      }
+      if (optimized.base64.length > 2_800_000) {
+        setError("La foto es demasiado grande. Elige una imagen de menos de 2 MB.");
+        return;
+      }
+
+      await updateUser({ avatarUrl: `data:image/jpeg;base64,${optimized.base64}` });
+      Alert.alert("Foto actualizada", "Tu foto de perfil se guardó correctamente.");
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "No se pudo actualizar la foto de perfil.");
+    } finally {
+      setPhotoBusy(false);
+    }
+  }
 
   async function saveProfile() {
     const nameChanged = fullName.trim() !== user?.fullName;
@@ -63,7 +112,20 @@ export default function ProfileScreen() {
       <BrandHeader eyebrow="Cuenta y seguridad" title="Perfil" />
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <View style={styles.identity}>
-          <View style={styles.avatar}><Text style={styles.avatarText}>{user?.fullName.trim().charAt(0).toUpperCase() || "S"}</Text></View>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Elegir foto de perfil desde la galería"
+            onPress={() => void changePhoto()}
+            disabled={photoBusy}
+            style={({ pressed }) => [styles.avatarPicker, pressed && styles.pressed, photoBusy && styles.disabled]}
+          >
+            <View style={styles.avatar}>
+              {user?.avatarUrl
+                ? <Image source={{ uri: user.avatarUrl }} style={styles.avatarImage} />
+                : <Text style={styles.avatarText}>{user?.fullName.trim().charAt(0).toUpperCase() || "S"}</Text>}
+            </View>
+            <Text style={styles.avatarAction}>{photoBusy ? "Guardando…" : "Cambiar foto"}</Text>
+          </Pressable>
           <View style={styles.identityCopy}>
             <Text style={styles.name}>{user?.fullName}</Text>
             <Text style={styles.email}>{user?.email}</Text>
@@ -120,8 +182,11 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.paper, paddingTop: 7 },
   content: { paddingHorizontal: 16, paddingBottom: 30 },
   identity: { flexDirection: "row", alignItems: "center", gap: 12, borderRadius: 17, padding: 16, backgroundColor: colors.ink },
+  avatarPicker: { alignItems: "center", gap: 4 },
   avatar: { width: 48, height: 48, alignItems: "center", justifyContent: "center", borderRadius: 24, backgroundColor: "#d8efeb" },
+  avatarImage: { width: 48, height: 48, borderRadius: 24 },
   avatarText: { color: colors.tealDeep, fontSize: 19, fontWeight: "900" },
+  avatarAction: { color: "#bce4de", fontSize: 8, fontWeight: "800" },
   identityCopy: { flex: 1 },
   name: { color: colors.white, fontSize: 13, fontWeight: "800" },
   email: { color: "#bdd2d0", fontSize: 9, marginTop: 3 },

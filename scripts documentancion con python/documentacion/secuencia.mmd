@@ -1,0 +1,25 @@
+sequenceDiagram
+    autonumber
+    actor U as Usuario
+    participant D as Dashboard.jsp
+    participant PC as PlacesController
+    participant GS as GoogleMapsService
+    participant GAPI as Google Places API
+    participant DB as MySQL
+
+    U->>+D: Clic en el mapa (lat, lng)
+    Note over D: Captura coordenadas y valida categoría
+    D->>+PC: GET /api/places/nearby
+    PC->>+GS: buscarCercanos(lat, lng, tipo, radio)
+    GS->>+GAPI: POST Places:searchText
+    GAPI-->>-GS: Lista de competidores
+    GS-->>-PC: JSON estructurado
+    PC-->>-D: HTTP 200 OK
+    Note over D: Renderiza marcadores y calcula score
+    D-->>U: Visualiza el análisis
+    U->>+D: Confirma guardar análisis
+    D->>+PC: POST /api/analisis
+    PC->>+DB: Persiste mediante JPA/Hibernate
+    DB-->>-PC: ID generado
+    PC-->>-D: HTTP 201 Created
+    D-->>-U: Confirmación visual

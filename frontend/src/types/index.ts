@@ -26,6 +26,7 @@ export interface AnalysisSummary {
 }
 export interface User {
   id: string; email: string; fullName: string;
+  avatarUrl: string | null;
   isActive: boolean; createdAt: string;
 }
 export interface TokenResponse {

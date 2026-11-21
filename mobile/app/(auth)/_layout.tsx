@@ -12,7 +12,7 @@ export default function AuthLayout() {
       </View>
     );
   }
-  if (user) return <Redirect href="/(app)/(tabs)" />;
+  if (user) return <Redirect href="/(app)" />;
   return <Stack screenOptions={{ headerShown: false, animation: "fade" }} />;
 }
 

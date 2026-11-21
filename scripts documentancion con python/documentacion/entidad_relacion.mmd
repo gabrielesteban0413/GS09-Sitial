@@ -1,0 +1,51 @@
+erDiagram
+    USUARIOS ||--o{ ANALISIS : posee
+    USUARIOS ||--o{ CAPAS : crea
+    ANALISIS ||--o{ COMPETIDORES : detecta
+    CAPAS ||--o{ UBICACIONES : contiene
+
+    USUARIOS {
+        bigint id_usuario PK
+        varchar email UK
+        varchar password
+        varchar full_name
+        boolean is_active
+    }
+    ANALISIS {
+        bigint id_analisis PK
+        bigint id_usuario FK
+        varchar label
+        double latitude
+        double longitude
+        varchar business_type
+        int radius_meters
+        int overall_score
+        varchar verdict
+        text metrics
+    }
+    CAPAS {
+        bigint id_capa PK
+        bigint id_usuario FK
+        varchar nombre
+        varchar descripcion
+        varchar color
+    }
+    UBICACIONES {
+        bigint id_ubicacion PK
+        bigint id_capa FK
+        varchar nombre
+        varchar direccion
+        double latitude
+        double longitude
+        varchar categoria
+    }
+    COMPETIDORES {
+        bigint id_competidor PK
+        bigint id_analisis FK
+        varchar nombre
+        varchar categoria
+        int distancia_metros
+        double rating
+        int review_count
+        varchar threat_level
+    }

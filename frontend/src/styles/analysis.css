@@ -179,6 +179,10 @@
   transform: rotate(-90deg);
 }
 
+.ah-score-ring svg circle:last-child {
+  transition: stroke-dashoffset .75s cubic-bezier(.2,.75,.25,1);
+}
+
 .ah-score-val {
   position: absolute;
   inset: 0;
@@ -286,6 +290,10 @@
   font-size: 12px;
   line-height: 1.6;
   text-align: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ah-score-ring svg circle:last-child { transition: none; }
 }
 
 .analysis-table-scroll {

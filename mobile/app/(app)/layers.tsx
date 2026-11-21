@@ -10,10 +10,11 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { BrandHeader } from "../../../src/components/BrandHeader";
-import { useWorkspace } from "../../../src/context/WorkspaceContext";
-import { api, type LocationPin } from "../../../src/lib/api";
-import { colors } from "../../../src/theme";
+import { BrandHeader } from "../../src/components/BrandHeader";
+import { BouncePressable } from "../../src/components/BouncePressable";
+import { useWorkspace } from "../../src/context/WorkspaceContext";
+import { api, type LocationPin } from "../../src/lib/api";
+import { colors } from "../../src/theme";
 
 const LAYER_COLORS = ["#318b8e", "#7d3865", "#4e7655", "#c28a39", "#4868a0"];
 
@@ -127,13 +128,14 @@ export default function LayersScreen() {
               />
             ))}
           </View>
-          <Pressable
-            style={({ pressed }) => [styles.createButton, pressed && styles.pressed, (busy || !name.trim()) && styles.disabled]}
+          <BouncePressable
+            accessibilityRole="button"
+            style={[styles.createButton, (busy || !name.trim()) && styles.disabled]}
             onPress={() => void createLayer()}
             disabled={busy || !name.trim()}
           >
             {busy ? <ActivityIndicator color={colors.white} size="small" /> : <Text style={styles.createText}>Crear capa</Text>}
-          </Pressable>
+          </BouncePressable>
         </View>
 
         <Text style={styles.sectionTitle}>Tus proyectos · {layers.length}</Text>
@@ -206,7 +208,6 @@ const styles = StyleSheet.create({
   colorSelected: { borderWidth: 3, borderColor: colors.ink },
   createButton: { minHeight: 42, alignItems: "center", justifyContent: "center", borderRadius: 11, backgroundColor: colors.tealDeep },
   createText: { color: colors.white, fontSize: 11, fontWeight: "800" },
-  pressed: { opacity: 0.82 },
   disabled: { opacity: 0.5 },
   sectionTitle: { color: colors.ink, fontSize: 13, fontWeight: "800", marginTop: 20, marginBottom: 9 },
   error: { color: colors.danger, backgroundColor: "#fff0f1", borderRadius: 8, padding: 9, fontSize: 10, marginBottom: 8 },

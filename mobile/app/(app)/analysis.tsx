@@ -1,17 +1,11 @@
 import { useEffect, useState } from "react";
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { BrandHeader } from "../../../src/components/BrandHeader";
-import { useWorkspace } from "../../../src/context/WorkspaceContext";
-import { api, type AnalysisHistoryItem } from "../../../src/lib/api";
-import { businessLabel, colors } from "../../../src/theme";
-
-function formatDate(value: string): string {
-  const date = new Date(value);
-  return Number.isNaN(date.getTime())
-    ? "Fecha no disponible"
-    : new Intl.DateTimeFormat("es-CO", { dateStyle: "medium", timeStyle: "short" }).format(date);
-}
+import { BrandHeader } from "../../src/components/BrandHeader";
+import { AnalysisHistoryCarousel } from "../../src/components/AnalysisHistoryCarousel";
+import { useWorkspace } from "../../src/context/WorkspaceContext";
+import { api, type AnalysisHistoryItem } from "../../src/lib/api";
+import { businessLabel, colors } from "../../src/theme";
 
 export default function AnalysisScreen() {
   const { latestAnalysis } = useWorkspace();
@@ -86,19 +80,7 @@ export default function AnalysisScreen() {
         {!loading && !error && history.length === 0 ? (
           <Text style={styles.empty}>Todavía no hay análisis guardados.</Text>
         ) : null}
-        {history.map((item) => (
-          <View key={item.id} style={styles.historyItem}>
-            <View style={styles.historyDot} />
-            <View style={styles.historyCopy}>
-              <Text style={styles.historyName}>{item.label || "Ubicación"}</Text>
-              <Text style={styles.historyMeta}>
-                {businessLabel(item.businessType)} · {item.latitude.toFixed(4)}, {item.longitude.toFixed(4)}
-              </Text>
-              <Text style={styles.historyDate}>{formatDate(item.createdAt)}</Text>
-            </View>
-            <Text style={styles.historyScore}>N/D</Text>
-          </View>
-        ))}
+        {!loading && !error && history.length > 0 ? <AnalysisHistoryCarousel items={history} /> : null}
       </ScrollView>
     </SafeAreaView>
   );
@@ -131,11 +113,4 @@ const styles = StyleSheet.create({
   historyHeading: { color: colors.ink, fontSize: 13, fontWeight: "800", marginTop: 21, marginBottom: 9 },
   spinner: { marginVertical: 15 },
   error: { color: colors.danger, fontSize: 10, paddingVertical: 8 },
-  historyItem: { flexDirection: "row", alignItems: "center", gap: 10, borderWidth: 1, borderColor: colors.border, borderRadius: 13, padding: 12, marginBottom: 8, backgroundColor: colors.white },
-  historyDot: { width: 8, height: 8, borderRadius: 5, backgroundColor: colors.teal },
-  historyCopy: { flex: 1 },
-  historyName: { color: colors.ink, fontSize: 10, fontWeight: "800" },
-  historyMeta: { color: colors.inkSoft, fontSize: 9, marginTop: 3 },
-  historyDate: { color: colors.muted, fontSize: 8, marginTop: 3 },
-  historyScore: { color: colors.muted, fontSize: 10, fontWeight: "800" },
 });
